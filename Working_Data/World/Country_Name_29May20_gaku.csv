@@ -1,0 +1,204 @@
+FishingEntityID,FishingEntityName,Country.or.Area
+1,Albania,Albania
+2,Algeria,Algeria
+3,American Samoa,American Samoa
+4,Angola,Angola
+5,Antigua & Barbuda,Antigua and Barbuda
+6,Argentina,Argentina
+7,Australia,Australia
+8,Bahamas,Bahamas
+9,Bahrain,Bahrain
+10,Bangladesh,Bangladesh
+11,Barbados,Barbados
+12,Belgium,Belgium
+13,Bermuda (UK),Bermuda
+14,Bosnia & Herzegovina,Bosnia and Herzegovina
+15,Brazil,Brazil
+16,Belize,Belize
+17,Brit. Indian Ocean Terr. (UK),British_Indian_Ocean_Territory
+18,Solomon Isl.,Solomon Islands
+19,British Virgin Isl. (UK),British_Virgin_Islands
+20,Brunei Darussalam,Brunei Darussalam
+21,Bulgaria,Bulgaria
+22,Myanmar,Myanmar
+23,Eritrea,Eritrea
+24,Cambodia,Cambodia
+25,Cameroon,Cameroon
+26,Canada,Canada
+27,Cape Verde,Cabo Verde
+28,Cayman Isl. (UK),Cayman_Islands
+29,Sri Lanka,Sri Lanka
+30,Chile,Chile
+31,China,China
+32,Taiwan,Taiwan
+33,Christmas Isl. (Australia),Christmas_Island
+34,Cocos (Keeling) Isl. (Australia)),Cocos_(Keeling)_Islands
+35,Colombia,Colombia
+36,Comoros,Comoros
+37,Mayotte (France),Mayotte
+38,"Congo, R. of",Democratic_Republic_of_the_Congo
+39,Congo (ex-Zaire),Congo
+40,Cook Islands,Cook Islands
+41,Costa Rica,Costa Rica
+42,Croatia,Croatia
+43,Cuba,Cuba
+45,Benin,Benin
+46,Denmark,Denmark
+47,Dominica,Dominica
+48,Dominican Republic,Dominican Republic
+49,Ecuador,Ecuador
+50,El Salvador,El Salvador
+51,Equatorial Guinea,Equatorial Guinea
+53,Estonia,Estonia
+54,Faeroe Isl. (Denmark),Faroe_Islands
+55,Falkland Isl. (UK),Falkland_Islands_(Malvinas)
+56,Fiji,Fiji
+57,Finland,Finland
+58,France,France
+59,French Guiana,French Guiana
+60,French Polynesia,French Polynesia
+61,Djibouti,Djibouti
+62,Gabon,Gabon
+63,Georgia,Georgia
+64,Gambia,Gambia
+65,Gaza Strip,Gaza Strip
+66,Germany,Germany
+67,Ghana,Ghana
+69,Kiribati,Kiribati
+70,Greece,Greece
+71,Greenland,Greenland
+72,Grenada,Grenada
+73,Guadeloupe  (France),Guadeloupe
+74,Guam (USA),Guam
+75,Guatemala,Guatemala
+76,Guinea,Guinea
+77,Guyana,Guyana
+78,Haiti,Haiti
+79,Honduras,Honduras
+80,Hong Kong,"China, Hong Kong Special Administrative Region"
+81,Iceland,Iceland
+82,India,India
+83,Indonesia,Indonesia
+84,Iran,Iran (Islamic Republic of)
+85,Iraq,Iraq
+86,Ireland,Ireland
+87,Israel,Israel
+88,Italy,Italy
+89,C_te d'Ivoire,C_te dÅfIvoire
+90,Jamaica,Jamaica
+91,Japan,Japan
+92,Jordan,Jordan
+93,Kenya,Kenya
+94,Korea (North),Democratic People's Republic of Korea
+95,Korea (South),Republic of Korea
+96,Kuwait,Kuwait
+97,Lebanon,Lebanon
+98,Latvia,Latvia
+99,Liberia,Liberia
+100,Libya,Libya
+101,Lithuania,Lithuania
+103,Madagascar,Madagascar
+104,Malaysia,Malaysia
+105,Maldives,Maldives
+106,Malta,Malta
+107,Martinique (France),Martinique
+108,Mauritania,Mauritania
+109,Mauritius,Mauritius
+110,Mexico,Mexico
+112,Montserrat (UK),Montserrat
+113,Morocco,Morocco
+114,Mozambique,Mozambique
+115,Oman,Oman
+116,Namibia,Namibia
+117,Nauru,Nauru
+118,Netherlands,Netherlands
+120,Aruba (Netherlands),Aruba
+121,New Caledonia (France),New Caledonia
+122,Vanuatu,Vanuatu
+123,New Zealand,New Zealand
+124,Nicaragua,Nicaragua
+125,Nigeria,Nigeria
+126,Niue (New Zealand),Niue
+127,Norfolk Isl. (Australia),Norfolk_Island
+128,Norway,Norway
+129,North Marianas (USA),Northern Mariana Islands
+131,Micronesia,Micronesia (Federated States of)
+132,Marshall Isl.,Marshall_Islands
+133,Palau,Palau
+134,Pakistan,Pakistan
+135,Panama,Panama
+136,Papua New Guinea,Papua New Guinea
+137,Peru,Peru
+138,Philippines,Philippines
+139,Pitcairn (UK),Pitcairn
+140,Poland,Poland
+141,Portugal,Portugal
+142,Guinea-Bissau,Guinea-Bissau
+143,Timor Leste,Timor-Leste
+144,Puerto Rico (USA),Puerto Rico
+145,Qatar,Qatar
+146,R_union (France),R_union
+147,Romania,Romania
+148,Russian Federation,Russian Federation
+149,Saint Helena (UK),Saint Helena
+150,Saint Kitts & Nevis,Saint Kitts and Nevis
+151,Anguilla (UK),Anguilla
+152,Saint Lucia,Saint Lucia
+153,St Pierre & Miquelon (Fr.),Saint Pierre and Miquelon
+154,Saint Vincent & the Grenadines,Saint Vincent and the Grenadines
+155,Sao Tome & Principe,Sao Tome and Principe
+156,Saudi Arabia,Saudi Arabia
+157,Senegal,Senegal
+158,Seychelles,Seychelles
+159,Sierra Leone,Sierra Leone
+160,Singapore,Singapore
+161,Viet Nam,Viet Nam
+162,Slovenia,Slovenia
+163,Somalia,Somalia
+164,South Africa,South Africa
+165,Spain,Spain
+166,Western Sahara (Morocco),Western Sahara
+167,Sudan,Sudan
+168,Suriname,Suriname
+169,Sweden,Sweden
+170,Syrian Arab Republic,Syrian Arab Republic
+171,Thailand,Thailand
+172,Togo,Togo
+173,Tokelau (New Zealand),Tokelau
+174,Tonga,Tonga
+175,Trinidad & Tobago,Trinidad and Tobago
+176,United Arab Emirates,United Arab Emirates
+177,Tunisia,Tunisia
+178,Turkey,Turkey
+179,Turks & Caicos Isl. (UK),Turks and Caicos Islands
+180,Tuvalu,Tuvalu
+181,Ukraine,Ukraine
+182,Egypt,Egypt
+183,United Kingdom,United_Kingdom_of_Great_Britain_and_Northern_Ireland
+184,Channel Isl. (UK),Channel Island
+186,Tanzania,Tanzania
+187,USA,United States of America
+188,US Virgin Isl.,United_States_Virgin_Islands
+189,Uruguay,Uruguay
+190,Venezuela,Venezuela (Bolivarian Republic of)
+191,Wallis & Futuna Isl. (France),Wallis and Futuna Islands
+192,Samoa,Samoa
+193,Yemen,Yemen
+194,Montenegro,Montenegro
+196,Kerguelen Isl. (France),Kerguelen Island
+199,Svalbard Isl. (Norway),Svalbard and Jan Mayen Islands
+207,North Cyprus,North Cyprus
+208,South Cyprus,South Cyprus
+209,St Barthelemy (France),Saint_Barth_lemy
+210,St Martin,Saint_Martin_(French_Part)
+213,Unknown Fishing Country,Unknown Fishing Country
+214,Curacao,Cura_ao
+215,Sint Maarten,Sint Maarten (Dutch part)
+216,Johnston Atoll (USA),Johnston Atoll (USA)_NA_UN
+217,Madeira Isl. (Portugal),Madeira Island
+218,Azores Isl. (Portugal),Azores Isl. (Portugal)_NA_UN
+219,Ascension Isl. (UK),Ascension Island
+220,Tristan da Cunha Isl. (UK),Tristan da Cunha Isl. (UK))_NA_UN
+221,Saba and Saint Eustaius (Netherlands),"Bonaire,_Sint_Eustatius_and_Saba"
+222,Bonaire (Netherlands),"Bonaire,_Sint_Eustatius_and_Saba"
+223,Others,Others

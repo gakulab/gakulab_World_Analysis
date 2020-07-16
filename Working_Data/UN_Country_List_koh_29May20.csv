@@ -1,0 +1,204 @@
+,FishingEntityID,FishingEntityName,Country.or.Area,Region.Code,Region.Name,Region.Name_koh,Sub.region.Code,Sub.region.Name,Sub.region.Name_koh,Intermediate.Region.Code,Intermediate.Region.Name,M49.Code,ISO.alpha3.Code,Least.Developed.Countries..LDC.,Land.Locked.Developing.Countries..LLDC.,Small.Island.Developing.States..SIDS.,Developed...Developing.Countries
+1,1,Albania,Albania,150,Europe,Europe,39,Southern Europe,Southern Europe,NA,,8,ALB,,,,Developed
+2,2,Algeria,Algeria,2,Africa,Africa,15,Northern Africa,Northern Africa,NA,,12,DZA,,,,Developing
+3,3,American Samoa,American Samoa,9,Oceania,Oceania,61,Polynesia,Polynesia,NA,,16,ASM,,,x,Developing
+4,4,Angola,Angola,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,17,Middle Africa,24,AGO,x,,,Developing
+144,151,Anguilla (UK),Anguilla,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,29,Caribbean,660,AIA,,,x,Developing
+5,5,Antigua & Barbuda,Antigua and Barbuda,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,29,Caribbean,28,ATG,,,x,Developing
+6,6,Argentina,Argentina,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,5,South America,32,ARG,,,,Developing
+114,120,Aruba (Netherlands),Aruba,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,29,Caribbean,533,ABW,,,x,Developing
+199,219,Ascension Isl. (UK),Ascension Island,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+7,7,Australia,Australia,9,Oceania,Oceania,53,Australia and New Zealand,Australia and New Zealand,NA,,36,AUS,,,,Developed
+198,218,Azores Isl. (Portugal),Azores Isl. (Portugal) NA UN,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+8,8,Bahamas,Bahamas,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,29,Caribbean,44,BHS,,,x,Developing
+9,9,Bahrain,Bahrain,142,Asia,Asia,145,Western Asia,Western Asia,NA,,48,BHR,,,,Developing
+10,10,Bangladesh,Bangladesh,142,Asia,Asia,34,Southern Asia,Southern Asia,NA,,50,BGD,x,,,Developing
+11,11,Barbados,Barbados,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,29,Caribbean,52,BRB,,,x,Developing
+12,12,Belgium,Belgium,150,Europe,Europe,155,Western Europe,Western Europe,NA,,56,BEL,,,,Developed
+16,16,Belize,Belize,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,13,Central America,84,BLZ,,,x,Developing
+44,45,Benin,Benin,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,11,Western Africa,204,BEN,x,,,Developing
+13,13,Bermuda (UK),Bermuda,19,Americas,Americas,21,Northern America,Northern America,NA,,60,BMU,,,,Developed
+202,222,Bonaire (Netherlands),"Bonaire, Sint Eustatius and Saba",19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,29,Caribbean,535,BES,,,x,Developing
+14,14,Bosnia & Herzegovina,Bosnia and Herzegovina,150,Europe,Europe,39,Southern Europe,Southern Europe,NA,,70,BIH,,,,Developed
+15,15,Brazil,Brazil,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,5,South America,76,BRA,,,,Developing
+17,17,Brit. Indian Ocean Terr. (UK),British Indian Ocean Territory,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,14,Eastern Africa,86,IOT,,,,Developing
+19,19,British Virgin Isl. (UK),British Virgin Islands,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,29,Caribbean,92,VGB,,,x,Developing
+20,20,Brunei Darussalam,Brunei Darussalam,142,Asia,Asia,35,South-eastern Asia,South-eastern Asia,NA,,96,BRN,,,,Developing
+21,21,Bulgaria,Bulgaria,150,Europe,Europe,151,Eastern Europe,Eastern Europe,NA,,100,BGR,,,,Developed
+86,89,C_te d'Ivoire,C te d’Ivoire,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,11,Western Africa,384,CIV,,,,Developing
+24,24,Cambodia,Cambodia,142,Asia,Asia,35,South-eastern Asia,South-eastern Asia,NA,,116,KHM,x,,,Developing
+25,25,Cameroon,Cameroon,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,17,Middle Africa,120,CMR,,,,Developing
+26,26,Canada,Canada,19,Americas,Americas,21,Northern America,Northern America,NA,,124,CAN,,,,Developed
+27,27,Cape Verde,Cabo Verde,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,11,Western Africa,132,CPV,,,x,Developing
+28,28,Cayman Isl. (UK),Cayman Islands,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,29,Caribbean,136,CYM,,,,Developing
+177,184,Channel Isl. (UK),Channel Island,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+30,30,Chile,Chile,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,5,South America,152,CHL,,,,Developing
+31,31,China,China,142,Asia,Asia,30,Eastern Asia,Eastern Asia,NA,,156,CHN,,,,Developing
+33,33,Christmas Isl. (Australia),Christmas Island,9,Oceania,Oceania,53,Australia and New Zealand,Australia and New Zealand,NA,,162,CXR,,,,Developed
+34,34,Cocos (Keeling) Isl. (Australia)),Cocos (Keeling) Islands,9,Oceania,Oceania,53,Australia and New Zealand,Australia and New Zealand,NA,,166,CCK,,,,Developed
+35,35,Colombia,Colombia,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,5,South America,170,COL,,,,Developing
+36,36,Comoros,Comoros,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,14,Eastern Africa,174,COM,x,,x,Developing
+39,39,Congo (ex-Zaire),Congo,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,17,Middle Africa,178,COG,,,,Developing
+38,38,"Congo, R. of",Democratic Republic of the Congo,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,17,Middle Africa,180,COD,x,,,Developing
+40,40,Cook Islands,Cook Islands,9,Oceania,Oceania,61,Polynesia,Polynesia,NA,,184,COK,,,x,Developing
+41,41,Costa Rica,Costa Rica,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,13,Central America,188,CRI,,,,Developing
+42,42,Croatia,Croatia,150,Europe,Europe,39,Southern Europe,Southern Europe,NA,,191,HRV,,,,Developed
+43,43,Cuba,Cuba,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,29,Caribbean,192,CUB,,,x,Developing
+194,214,Curacao,Cura ao,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,29,Caribbean,531,CUW,,,x,Developing
+45,46,Denmark,Denmark,150,Europe,Europe,154,Northern Europe,Northern Europe,NA,,208,DNK,,,,Developed
+59,61,Djibouti,Djibouti,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,14,Eastern Africa,262,DJI,x,,,Developing
+46,47,Dominica,Dominica,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,29,Caribbean,212,DMA,,,x,Developing
+47,48,Dominican Republic,Dominican Republic,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,29,Caribbean,214,DOM,,,x,Developing
+48,49,Ecuador,Ecuador,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,5,South America,218,ECU,,,,Developing
+175,182,Egypt,Egypt,2,Africa,Africa,15,Northern Africa,Northern Africa,NA,,818,EGY,,,,Developing
+49,50,El Salvador,El Salvador,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,13,Central America,222,SLV,,,,Developing
+50,51,Equatorial Guinea,Equatorial Guinea,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,17,Middle Africa,226,GNQ,,,,Developing
+23,23,Eritrea,Eritrea,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,14,Eastern Africa,232,ERI,x,,,Developing
+51,53,Estonia,Estonia,150,Europe,Europe,154,Northern Europe,Northern Europe,NA,,233,EST,,,,Developed
+52,54,Faeroe Isl. (Denmark),Faroe Islands,150,Europe,Europe,154,Northern Europe,Northern Europe,NA,,234,FRO,,,,Developed
+53,55,Falkland Isl. (UK),Falkland Islands (Malvinas),19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,5,South America,238,FLK,,,,Developing
+54,56,Fiji,Fiji,9,Oceania,Oceania,54,Melanesia,Melanesia,NA,,242,FJI,,,x,Developing
+55,57,Finland,Finland,150,Europe,Europe,154,Northern Europe,Northern Europe,NA,,246,FIN,,,,Developed
+56,58,France,France,150,Europe,Europe,155,Western Europe,Western Europe,NA,,250,FRA,,,,Developed
+57,59,French Guiana,French Guiana,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,5,South America,254,GUF,,,,Developing
+58,60,French Polynesia,French Polynesia,9,Oceania,Oceania,61,Polynesia,Polynesia,NA,,258,PYF,,,x,Developing
+60,62,Gabon,Gabon,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,17,Middle Africa,266,GAB,,,,Developing
+62,64,Gambia,Gambia,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,11,Western Africa,270,GMB,x,,,Developing
+63,65,Gaza Strip,Gaza Strip,NA,NA,Asia,NA,NA,Western Asia,NA,NA,NA,NA,NA,NA,NA,NA
+61,63,Georgia,Georgia,142,Asia,Asia,145,Western Asia,Western Asia,NA,,268,GEO,,,,Developing
+64,66,Germany,Germany,150,Europe,Europe,155,Western Europe,Western Europe,NA,,276,DEU,,,,Developed
+65,67,Ghana,Ghana,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,11,Western Africa,288,GHA,,,,Developing
+67,70,Greece,Greece,150,Europe,Europe,39,Southern Europe,Southern Europe,NA,,300,GRC,,,,Developed
+68,71,Greenland,Greenland,19,Americas,Americas,21,Northern America,Northern America,NA,,304,GRL,,,,Developed
+69,72,Grenada,Grenada,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,29,Caribbean,308,GRD,,,x,Developing
+70,73,Guadeloupe  (France),Guadeloupe,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,29,Caribbean,312,GLP,,,,Developing
+71,74,Guam (USA),Guam,9,Oceania,Oceania,57,Micronesia,Micronesia,NA,,316,GUM,,,x,Developing
+72,75,Guatemala,Guatemala,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,13,Central America,320,GTM,,,,Developing
+73,76,Guinea,Guinea,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,11,Western Africa,324,GIN,x,,,Developing
+135,142,Guinea-Bissau,Guinea-Bissau,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,11,Western Africa,624,GNB,x,,x,Developing
+74,77,Guyana,Guyana,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,5,South America,328,GUY,,,x,Developing
+75,78,Haiti,Haiti,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,29,Caribbean,332,HTI,x,,x,Developing
+76,79,Honduras,Honduras,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,13,Central America,340,HND,,,,Developing
+77,80,Hong Kong,"China, Hong Kong Special Administrative Region",142,Asia,Asia,30,Eastern Asia,Eastern Asia,NA,,344,HKG,,,,Developing
+78,81,Iceland,Iceland,150,Europe,Europe,154,Northern Europe,Northern Europe,NA,,352,ISL,,,,Developed
+79,82,India,India,142,Asia,Asia,34,Southern Asia,Southern Asia,NA,,356,IND,,,,Developing
+80,83,Indonesia,Indonesia,142,Asia,Asia,35,South-eastern Asia,South-eastern Asia,NA,,360,IDN,,,,Developing
+81,84,Iran,Iran (Islamic Republic of),142,Asia,Asia,34,Southern Asia,Southern Asia,NA,,364,IRN,,,,Developing
+82,85,Iraq,Iraq,142,Asia,Asia,145,Western Asia,Western Asia,NA,,368,IRQ,,,,Developing
+83,86,Ireland,Ireland,150,Europe,Europe,154,Northern Europe,Northern Europe,NA,,372,IRL,,,,Developed
+84,87,Israel,Israel,142,Asia,Asia,145,Western Asia,Western Asia,NA,,376,ISR,,,,Developed
+85,88,Italy,Italy,150,Europe,Europe,39,Southern Europe,Southern Europe,NA,,380,ITA,,,,Developed
+87,90,Jamaica,Jamaica,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,29,Caribbean,388,JAM,,,x,Developing
+88,91,Japan,Japan,142,Asia,Asia,30,Eastern Asia,Eastern Asia,NA,,392,JPN,,,,Developed
+196,216,Johnston Atoll (USA),Johnston Atoll (USA) NA UN,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+89,92,Jordan,Jordan,142,Asia,Asia,145,Western Asia,Western Asia,NA,,400,JOR,,,,Developing
+90,93,Kenya,Kenya,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,14,Eastern Africa,404,KEN,,,,Developing
+187,196,Kerguelen Isl. (France),Kerguelen Island,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+66,69,Kiribati,Kiribati,9,Oceania,Oceania,57,Micronesia,Micronesia,NA,,296,KIR,x,,x,Developing
+91,94,Korea (North),Democratic People's Republic of Korea,142,Asia,Asia,30,Eastern Asia,Eastern Asia,NA,,408,PRK,,,,Developing
+92,95,Korea (South),Republic of Korea,142,Asia,Asia,30,Eastern Asia,Eastern Asia,NA,,410,KOR,,,,Developing
+93,96,Kuwait,Kuwait,142,Asia,Asia,145,Western Asia,Western Asia,NA,,414,KWT,,,,Developing
+95,98,Latvia,Latvia,150,Europe,Europe,154,Northern Europe,Northern Europe,NA,,428,LVA,,,,Developed
+94,97,Lebanon,Lebanon,142,Asia,Asia,145,Western Asia,Western Asia,NA,,422,LBN,,,,Developing
+96,99,Liberia,Liberia,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,11,Western Africa,430,LBR,x,,,Developing
+97,100,Libya,Libya,2,Africa,Africa,15,Northern Africa,Northern Africa,NA,,434,LBY,,,,Developing
+98,101,Lithuania,Lithuania,150,Europe,Europe,154,Northern Europe,Northern Europe,NA,,440,LTU,,,,Developed
+99,103,Madagascar,Madagascar,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,14,Eastern Africa,450,MDG,x,,,Developing
+197,217,Madeira Isl. (Portugal),Madeira Island,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+100,104,Malaysia,Malaysia,142,Asia,Asia,35,South-eastern Asia,South-eastern Asia,NA,,458,MYS,,,,Developing
+101,105,Maldives,Maldives,142,Asia,Asia,34,Southern Asia,Southern Asia,NA,,462,MDV,,,x,Developing
+102,106,Malta,Malta,150,Europe,Europe,39,Southern Europe,Southern Europe,NA,,470,MLT,,,,Developed
+125,132,Marshall Isl.,Marshall Islands,9,Oceania,Oceania,57,Micronesia,Micronesia,NA,,584,MHL,,,x,Developing
+103,107,Martinique (France),Martinique,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,29,Caribbean,474,MTQ,,,,Developing
+104,108,Mauritania,Mauritania,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,11,Western Africa,478,MRT,x,,,Developing
+105,109,Mauritius,Mauritius,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,14,Eastern Africa,480,MUS,,,x,Developing
+37,37,Mayotte (France),Mayotte,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,14,Eastern Africa,175,MYT,,,,Developing
+106,110,Mexico,Mexico,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,13,Central America,484,MEX,,,,Developing
+124,131,Micronesia,Micronesia (Federated States of),9,Oceania,Oceania,57,Micronesia,Micronesia,NA,,583,FSM,,,x,Developing
+186,194,Montenegro,Montenegro,150,Europe,Europe,39,Southern Europe,Southern Europe,NA,,499,MNE,,,,Developed
+107,112,Montserrat (UK),Montserrat,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,29,Caribbean,500,MSR,,,x,Developing
+108,113,Morocco,Morocco,2,Africa,Africa,15,Northern Africa,Northern Africa,NA,,504,MAR,,,,Developing
+109,114,Mozambique,Mozambique,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,14,Eastern Africa,508,MOZ,x,,,Developing
+22,22,Myanmar,Myanmar,142,Asia,Asia,35,South-eastern Asia,South-eastern Asia,NA,,104,MMR,x,,,Developing
+111,116,Namibia,Namibia,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,18,Southern Africa,516,NAM,,,,Developing
+112,117,Nauru,Nauru,9,Oceania,Oceania,57,Micronesia,Micronesia,NA,,520,NRU,,,x,Developing
+113,118,Netherlands,Netherlands,150,Europe,Europe,155,Western Europe,Western Europe,NA,,528,NLD,,,,Developed
+115,121,New Caledonia (France),New Caledonia,9,Oceania,Oceania,54,Melanesia,Melanesia,NA,,540,NCL,,,x,Developing
+117,123,New Zealand,New Zealand,9,Oceania,Oceania,53,Australia and New Zealand,Australia and New Zealand,NA,,554,NZL,,,,Developed
+118,124,Nicaragua,Nicaragua,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,13,Central America,558,NIC,,,,Developing
+119,125,Nigeria,Nigeria,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,11,Western Africa,566,NGA,,,,Developing
+120,126,Niue (New Zealand),Niue,9,Oceania,Oceania,61,Polynesia,Polynesia,NA,,570,NIU,,,x,Developing
+121,127,Norfolk Isl. (Australia),Norfolk Island,9,Oceania,Oceania,53,Australia and New Zealand,Australia and New Zealand,NA,,574,NFK,,,,Developed
+189,207,North Cyprus,North Cyprus,NA,NA,Asia,NA,NA,Western Asia,NA,NA,NA,NA,NA,NA,NA,NA
+123,129,North Marianas (USA),Northern Mariana Islands,9,Oceania,Oceania,57,Micronesia,Micronesia,NA,,580,MNP,,,x,Developing
+122,128,Norway,Norway,150,Europe,Europe,154,Northern Europe,Northern Europe,NA,,578,NOR,,,,Developed
+110,115,Oman,Oman,142,Asia,Asia,145,Western Asia,Western Asia,NA,,512,OMN,,,,Developing
+203,223,Others,Others,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+127,134,Pakistan,Pakistan,142,Asia,Asia,34,Southern Asia,Southern Asia,NA,,586,PAK,,,,Developing
+126,133,Palau,Palau,9,Oceania,Oceania,57,Micronesia,Micronesia,NA,,585,PLW,,,x,Developing
+128,135,Panama,Panama,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,13,Central America,591,PAN,,,,Developing
+129,136,Papua New Guinea,Papua New Guinea,9,Oceania,Oceania,54,Melanesia,Melanesia,NA,,598,PNG,,,x,Developing
+130,137,Peru,Peru,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,5,South America,604,PER,,,,Developing
+131,138,Philippines,Philippines,142,Asia,Asia,35,South-eastern Asia,South-eastern Asia,NA,,608,PHL,,,,Developing
+132,139,Pitcairn (UK),Pitcairn,9,Oceania,Oceania,61,Polynesia,Polynesia,NA,,612,PCN,,,,Developing
+133,140,Poland,Poland,150,Europe,Europe,151,Eastern Europe,Eastern Europe,NA,,616,POL,,,,Developed
+134,141,Portugal,Portugal,150,Europe,Europe,39,Southern Europe,Southern Europe,NA,,620,PRT,,,,Developed
+137,144,Puerto Rico (USA),Puerto Rico,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,29,Caribbean,630,PRI,,,x,Developing
+138,145,Qatar,Qatar,142,Asia,Asia,145,Western Asia,Western Asia,NA,,634,QAT,,,,Developing
+139,146,R_union (France),R union,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,14,Eastern Africa,638,REU,,,,Developing
+140,147,Romania,Romania,150,Europe,Europe,151,Eastern Europe,Eastern Europe,NA,,642,ROU,,,,Developed
+141,148,Russian Federation,Russian Federation,150,Europe,Europe,151,Eastern Europe,Eastern Europe,NA,,643,RUS,,,,Developed
+201,221,Saba and Saint Eustaius (Netherlands),"Bonaire, Sint Eustatius and Saba",19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,29,Caribbean,535,BES,,,x,Developing
+142,149,Saint Helena (UK),Saint Helena,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,11,Western Africa,654,SHN,,,,Developing
+143,150,Saint Kitts & Nevis,Saint Kitts and Nevis,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,29,Caribbean,659,KNA,,,x,Developing
+145,152,Saint Lucia,Saint Lucia,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,29,Caribbean,662,LCA,,,x,Developing
+147,154,Saint Vincent & the Grenadines,Saint Vincent and the Grenadines,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,29,Caribbean,670,VCT,,,x,Developing
+184,192,Samoa,Samoa,9,Oceania,Oceania,61,Polynesia,Polynesia,NA,,882,WSM,,,x,Developing
+148,155,Sao Tome & Principe,Sao Tome and Principe,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,17,Middle Africa,678,STP,x,,x,Developing
+149,156,Saudi Arabia,Saudi Arabia,142,Asia,Asia,145,Western Asia,Western Asia,NA,,682,SAU,,,,Developing
+150,157,Senegal,Senegal,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,11,Western Africa,686,SEN,x,,,Developing
+151,158,Seychelles,Seychelles,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,14,Eastern Africa,690,SYC,,,x,Developing
+152,159,Sierra Leone,Sierra Leone,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,11,Western Africa,694,SLE,x,,,Developing
+153,160,Singapore,Singapore,142,Asia,Asia,35,South-eastern Asia,South-eastern Asia,NA,,702,SGP,,,x,Developing
+195,215,Sint Maarten,Sint Maarten (Dutch part),19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,29,Caribbean,534,SXM,,,x,Developing
+155,162,Slovenia,Slovenia,150,Europe,Europe,39,Southern Europe,Southern Europe,NA,,705,SVN,,,,Developed
+18,18,Solomon Isl.,Solomon Islands,9,Oceania,Oceania,54,Melanesia,Melanesia,NA,,90,SLB,x,,x,Developing
+156,163,Somalia,Somalia,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,14,Eastern Africa,706,SOM,x,,,Developing
+157,164,South Africa,South Africa,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,18,Southern Africa,710,ZAF,,,,Developing
+190,208,South Cyprus,South Cyprus,NA,NA,Asia,NA,NA,Western Asia,NA,NA,NA,NA,NA,NA,NA,NA
+158,165,Spain,Spain,150,Europe,Europe,39,Southern Europe,Southern Europe,NA,,724,ESP,,,,Developed
+29,29,Sri Lanka,Sri Lanka,142,Asia,Asia,34,Southern Asia,Southern Asia,NA,,144,LKA,,,,Developing
+191,209,St Barthelemy (France),Saint Barth lemy,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,29,Caribbean,652,BLM,,,,Developing
+192,210,St Martin,Saint Martin (French Part),19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,29,Caribbean,663,MAF,,,,Developing
+146,153,St Pierre & Miquelon (Fr.),Saint Pierre and Miquelon,19,Americas,Americas,21,Northern America,Northern America,NA,,666,SPM,,,,Developed
+160,167,Sudan,Sudan,2,Africa,Africa,15,Northern Africa,Northern Africa,NA,,729,SDN,x,,,Developing
+161,168,Suriname,Suriname,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,5,South America,740,SUR,,,x,Developing
+188,199,Svalbard Isl. (Norway),Svalbard and Jan Mayen Islands,150,Europe,Europe,154,Northern Europe,Northern Europe,NA,,744,SJM,,,,Developed
+162,169,Sweden,Sweden,150,Europe,Europe,154,Northern Europe,Northern Europe,NA,,752,SWE,,,,Developed
+163,170,Syrian Arab Republic,Syrian Arab Republic,142,Asia,Asia,145,Western Asia,Western Asia,NA,,760,SYR,,,,Developing
+32,32,Taiwan,Taiwan,NA,NA,Asia,30,NA,Eastern Asia,NA,NA,NA,NA,NA,NA,NA,NA
+178,186,Tanzania,Tanzania,NA,NA,Africa,NA,NA,Sub-Saharan Africa,NA,NA,NA,NA,NA,NA,NA,NA
+164,171,Thailand,Thailand,142,Asia,Asia,35,South-eastern Asia,South-eastern Asia,NA,,764,THA,,,,Developing
+136,143,Timor Leste,Timor-Leste,142,Asia,Asia,35,South-eastern Asia,South-eastern Asia,NA,,626,TLS,x,,x,Developing
+165,172,Togo,Togo,2,Africa,Africa,202,Sub-Saharan Africa,Sub-Saharan Africa,11,Western Africa,768,TGO,x,,,Developing
+166,173,Tokelau (New Zealand),Tokelau,9,Oceania,Oceania,61,Polynesia,Polynesia,NA,,772,TKL,,,,Developing
+167,174,Tonga,Tonga,9,Oceania,Oceania,61,Polynesia,Polynesia,NA,,776,TON,,,x,Developing
+168,175,Trinidad & Tobago,Trinidad and Tobago,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,29,Caribbean,780,TTO,,,x,Developing
+200,220,Tristan da Cunha Isl. (UK),Tristan da Cunha Isl. (UK)) NA UN,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+170,177,Tunisia,Tunisia,2,Africa,Africa,15,Northern Africa,Northern Africa,NA,,788,TUN,,,,Developing
+171,178,Turkey,Turkey,142,Asia,Asia,145,Western Asia,Western Asia,NA,,792,TUR,,,,Developing
+172,179,Turks & Caicos Isl. (UK),Turks and Caicos Islands,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,29,Caribbean,796,TCA,,,,Developing
+173,180,Tuvalu,Tuvalu,9,Oceania,Oceania,61,Polynesia,Polynesia,NA,,798,TUV,x,,x,Developing
+174,181,Ukraine,Ukraine,150,Europe,Europe,151,Eastern Europe,Eastern Europe,NA,,804,UKR,,,,Developed
+169,176,United Arab Emirates,United Arab Emirates,142,Asia,Asia,145,Western Asia,Western Asia,NA,,784,ARE,,,,Developing
+176,183,United Kingdom,United Kingdom of Great Britain and Northern Ireland,150,Europe,Europe,154,Northern Europe,Northern Europe,NA,,826,GBR,,,,Developed
+193,213,Unknown Fishing Country,Unknown Fishing Country,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+181,189,Uruguay,Uruguay,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,5,South America,858,URY,,,,Developing
+180,188,US Virgin Isl.,United States Virgin Islands,19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,29,Caribbean,850,VIR,,,x,Developing
+179,187,USA,United States of America,19,Americas,Americas,21,Northern America,Northern America,NA,,840,USA,,,,Developed
+116,122,Vanuatu,Vanuatu,9,Oceania,Oceania,54,Melanesia,Melanesia,NA,,548,VUT,x,,x,Developing
+182,190,Venezuela,Venezuela (Bolivarian Republic of),19,Americas,Americas,419,Latin America and the Caribbean,Latin America and the Caribbean,5,South America,862,VEN,,,,Developing
+154,161,Viet Nam,Viet Nam,142,Asia,Asia,35,South-eastern Asia,South-eastern Asia,NA,,704,VNM,,,,Developing
+183,191,Wallis & Futuna Isl. (France),Wallis and Futuna Islands,9,Oceania,Oceania,61,Polynesia,Polynesia,NA,,876,WLF,,,,Developing
+159,166,Western Sahara (Morocco),Western Sahara,2,Africa,Africa,15,Northern Africa,Northern Africa,NA,,732,ESH,,,,Developing
+185,193,Yemen,Yemen,142,Asia,Asia,145,Western Asia,Western Asia,NA,,887,YEM,x,,,Developing

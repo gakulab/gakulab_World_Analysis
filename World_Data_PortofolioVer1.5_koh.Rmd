@@ -1,0 +1,748 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+¥123567890---
+title: "World_Data_PortofolioVer1.0"
+author: '@Kohsuke'
+date: "5/27/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Section 1: Code Memo & Log
+
+## (a) Reference:General
+- <The tidyverse style guide by Hadly Wickam> [https://style.tidyverse.org/]
+-　<探索的データ分析> [https://uribo.github.io/practical-ds/01/eda.html]
+
+## (b) Reference:Section Specific 
+<!-- Example 1 　- [Section ...  ]　××××××　 -->　
+<!-- Example 2 　- [Section ×　Portfolio Simulation  ]　××××××　 -->　
+
+
+
+## (c) Remarks/注意事項
+<!-- Example 1 　** ** bold and Section number + reasons 　 -->　
+###**Do NOT run these sections as default: defaultでは走らせないセクション:**
+- saveRDSを無効化
+ 
+## (d) Code log　/コードメモ
+<!-- Example 1 　- [13 May 2020:gaku]石川レポートの初期版提出後にコード整理のために学志がVer.8.0を作成　 -->　
+
+[29 May 2020: 5:59AM gaku] Add country profiles code from UN : https://unstats.un.org/unsd/methodology/m49/overview/
+http://data.un.org/Explorer.aspx
+
+- 
+
+
+# 1 準備：
+## 1-0 概要
+-オリジナルデータから.rdsファイルの作成
+-
+
+## Library読み込む
+```{r echo=TRUE}
+# 現在の環境にある変数の消去
+rm(list = ls(all=TRUE))
+#解析処理に関するセットアップ、パッケージの読み込みなど
+library(tidyverse)
+library(dplyr)
+library(ggsci)
+library(gdata)
+library(DT)
+library(xtable)
+library(openxlsx)
+library(ggrepel)
+library(formattable)
+library(gridExtra)
+library(stringr)
+```
+
+
+## データ数
+```{r}
+World_Data <- readRDS("Working_Data/World/World_Data_cleaned_6June20_koh.rds")
+
+
+options(scipen=100000)　#指数表示を避けるコード
+
+# クロス集計をおこないデータの概観の把握
+# xtabs関数でモデル式で多次元分割表を作成
+# https://teramonagi.hatenablog.com/entry/20150312/1426109245
+
+
+#魚種ごとのデータ数
+Cross_Table_0 <- World_Data %>%
+  xtabs(~TaxonKey, .)
+Cross_Table_0 <- as.data.frame(Cross_Table_0)
+datatable(Cross_Table_0)
+
+#年毎の各魚種のデータ数
+Cross_Table_1 <- World_Data %>%
+  xtabs(~TaxonKey+Year, .)
+Cross_Table_1 <- as.data.frame(Cross_Table_1)
+datatable(Cross_Table_1)
+
+
+#年別のデータ数
+Cross_Table_2 <- World_Data %>%
+  xtabs(~Year, .) 
+Cross_Table_2 <- as.data.frame(Cross_Table_2)
+datatable(Cross_Table_2)
+
+
+#国別のデータ数
+Cross_Table_4 <- World_Data %>%
+  xtabs(~FishingEntityName, .) 
+Cross_Table_4 <- as.data.frame(Cross_Table_4)
+datatable(Cross_Table_4)
+
+
+
+
+
+
+
+
+```
+
+魚種：1861
+年　：1950~2010
+国　：197
+
+
+
+
+## 年間漁獲量・漁獲だか
+```{r}
+source("World_Function_Rapha.R")
+
+Year_Catch_Value <- fun_Catch_Value(World_Data,TotalCatch_Tonnes,Total_Value)
+
+
+g1 <- ggplot(Year_Catch_Value) +
+  aes(x = Year,y = TotalCatch_Tonnes,fill = "Year") +
+  geom_bar(stat = "identity") +
+  theme_light(base_size = 15,base_family = "HiraKakuProN-W3") +
+  labs(x = "Year",y = "Total_Catch(million ton)") +
+  guides(fill = FALSE) +
+  scale_x_continuous(breaks = seq(1950,2010,5)) +
+  scale_y_continuous(breaks = seq(0,120,20)) +
+  expand_limits(y = 0) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+g1
+
+
+g2 <- ggplot(Year_Catch_Value) +
+  aes(x = Year,y = Total_Value,fill = "Year") +
+  geom_bar(stat = "identity") +
+  theme_light(base_size = 15,base_family = "HiraKakuProN-W3") +
+  labs(x = "Year",y = "Total_Value(million USD)") +
+  guides(fill = FALSE) +
+  scale_x_continuous(breaks = seq(1950,2010,5)) +
+  scale_y_continuous(breaks = seq(0,150000,30000)) +
+  expand_limits(y = 0) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+g2
+
+
+```
+
+
+
+
+
+
+## 年毎のデータ頻度
+```{r}
+Yearly_Data = Cross_Table_2 
+
+
+
+ggplot(Yearly_Data) +
+  theme_light(base_size = 11,base_family = "HiraKakuProN-W3") +
+  aes(x = Year,y = Freq,fill = Year) +
+  geom_bar(stat = "identity") +
+  labs(x = "Year",y = "data_number") +
+  guides(fill = FALSE) +
+  scale_x_discrete(breaks = seq(1950,2010,5)) +
+  scale_y_continuous(breaks = seq(0,15000,3000)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  
+
+#年ごとのデータ数
+```
+
+
+
+
+
+
+
+
+## HHI 
+```{r}
+source("World_Function_Rapha.R")
+
+#年ごとのHHI
+
+World_HHI_all_Yearly <- fun_HHI(World_Data,TotalCatch_Tonnes,Total_Value)
+  
+#列を見やすいように並び替える
+World_HHI_all_Yearly <- World_HHI_all_Yearly[c(1,8,2,3,4,5,6,7)]
+  
+World_HHI_all_Yearly$Year <- as.integer(World_HHI_all_Yearly$Year)
+
+
+#HHI_Max <- max(World_HHI_all_Yearly$HHI_Catch_Total,World_HHI_all_Yearly$HHI_Value_Total)
+#HHI_Min <- min(World_HHI_all_Yearly$HHI_Catch_Total,World_HHI_all_Yearly$HHI_Value_Total)
+
+EffectA=1.5
+
+g5 <- ggplot(World_HHI_all_Yearly, 
+             aes(x = HHI_Catch_Total,y = HHI_Value_Total,color = Year))+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.5) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  labs(x = "Catch_HHI",y = "Value_HHI",size="Total_Catch(million ton)") +
+  scale_x_continuous(limits = c(0,800)) +
+  scale_y_continuous(limits = c(0,500))+
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+g5
+
+
+```
+
+
+
+
+
+
+## シンプソン指数λ
+```{r}
+source("World_Function_Rapha.R")
+
+#年ごとのλ
+World_Simpson_all_Yearly <- fun_Simpson(World_Data,TotalCatch_Tonnes,Total_Value)
+
+World_Simpson_all_Yearly <- World_Simpson_all_Yearly[c(1,8,2,3,4,5,6,7)]
+
+World_Simpson_all_Yearly$Year <- as.integer(World_Simpson_all_Yearly$Year)
+
+#Simpson_Max <- max(World_Simpson_all_Yearly$Simpson_Catch_Total,World_Simpson_all_Yearly$Simpson_Value_Total)
+#Simpson_Min <- min(World_Simpson_all_Yearly$Simpson_Catch_Total,World_Simpson_all_Yearly$Simpson_Value_Total)
+
+EffectA=1.5
+
+g6 <- ggplot(World_Simpson_all_Yearly,
+             aes(x = Simpson_Catch_Total,y = Simpson_Value_Total,color = Year))+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.5) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  labs(x = "Catch_λ",y = "Value_λ",size="Total_Catch(million ton)") +
+  scale_x_continuous(limits = c(10,80)) +
+  scale_y_continuous(limits = c(10,120))+
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+g6
+
+
+```
+
+
+
+
+
+
+## シャノン・ウィナー指数H'
+```{r}
+source("World_Function_Rapha.R")
+
+#年ごとのH'
+World_Shannon_all_Yearly = fun_Shannon(World_Data,TotalCatch_Tonnes,Total_Value )
+
+World_Shannon_all_Yearly <- World_Shannon_all_Yearly[c(1,8,2,3,4,5,6,7)]
+
+World_Shannon_all_Yearly$Year <- as.integer(World_Shannon_all_Yearly$Year)
+
+#Shannon_Max <- max(World_Shannon_all_Yearly$Shannon_Catch_Total,World_Shannon_all_Yearly$Shannon_Value_Total)#
+#Shannon_Min <- min(World_Shannon_all_Yearly$Shannon_Catch_Total,World_Shannon_all_Yearly$Shannon_Value_Total)
+
+EffectA=1.5
+
+g7 <- ggplot(World_Shannon_all_Yearly,
+             aes(x = Shannon_Catch_Total,y = Shannon_Value_Total,color = Year))+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.5) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  labs(x = "Catch_H'",y = "Value_H'",size="Total_Catch(million ton)") +
+ # scale_x_continuous(limits = c(4,5.5)) +
+#  scale_y_continuous(limits = c(4.5,5.5))+
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+g7
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+# 各地域 
+## HHI
+```{r}
+source("World_Function_Rapha.R")
+
+Rerion_HHI <- fun_HHI4(World_Data,TotalCatch_Tonnes,Total_Value)
+
+#HHI_Max <- max(Rerion_HHI$HHI_Catch_Total,Rerion_HHI$HHI_Value_Total)
+#HHI_Min <- min(Rerion_HHI$HHI_Catch_Total,Rerion_HHI$HHI_Value_Total)
+
+
+EffectA=1.5
+
+p_4 <- ggplot(Rerion_HHI) +
+  aes(x = HHI_Catch_Total,y = HHI_Value_Total,color = Year) +
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.5) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Region.Name_koh)　+
+  labs(x = "Catch_HHI",y = "Value_HHI",size="Total_Catch(million ton)") +　
+  scale_x_continuous(limits = c(0,5000)) +　　　　　　　　　　　
+  scale_y_continuous(limits = c(0,2000)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+
+print(p_4)
+
+
+```
+
+
+
+
+
+
+####Africa America
+```{r}
+Rerion_HHI1 <- Rerion_HHI %>% 
+  filter(Region.Name_koh == "Africa"|Region.Name_koh == "Americas")
+
+EffectA=1.5
+
+q1 <- ggplot(Rerion_HHI1) +
+  aes(x = HHI_Catch_Total,y = HHI_Value_Total,color = Year) +
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.5) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Region.Name_koh)　+
+  labs(x = "Catch_HHI",y = "Value_HHI",size="Total_Catch(million ton)") +　
+  scale_x_continuous(limits = c(0,5000)) +　　　　　　　　　　　
+  scale_y_continuous(limits = c(0,2000)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+
+print(q1)
+
+
+```
+
+
+
+
+
+####Europe Oceania
+```{r}
+Rerion_HHI2 <- Rerion_HHI %>% 
+  filter(Region.Name_koh == "Europe"|Region.Name_koh == "Oceania")
+
+EffectA=1.5
+
+q2 <- ggplot(Rerion_HHI2) +
+  aes(x = HHI_Catch_Total,y = HHI_Value_Total,color = Year) +
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.5) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Region.Name_koh)　+
+  labs(x = "Catch_HHI",y = "Value_HHI",size="Total_Catch(million ton)") +　
+  scale_x_continuous(limits = c(0,2000)) +　　　　　　　　　　　
+  scale_y_continuous(limits = c(0,1500)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+
+print(q2)
+
+
+```
+
+
+
+
+####Asia
+```{r}
+Rerion_HHI3 <- Rerion_HHI %>% 
+  filter(Region.Name_koh == "Asia")
+
+EffectA=1.5
+
+q3 <- ggplot(Rerion_HHI3) +
+  aes(x = HHI_Catch_Total,y = HHI_Value_Total,color = Year) +
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.5) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Region.Name_koh)　+
+  labs(x = "Catch_HHI",y = "Value_HHI",size="Total_Catch(million ton)") +　
+  scale_x_continuous(limits = c(150,350)) +　　　　　　　　　　　
+  scale_y_continuous(limits = c(100,350)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+
+print(q3)
+
+
+```
+
+
+
+##Simpson
+```{r}
+source("World_Function_Rapha.R")
+
+Rerion_Simpson <- fun_Simpson3(World_Data,TotalCatch_Tonnes,Total_Value)
+
+Simpson_Max <- max(Rerion_Simpson$Simpson_Catch_Total,
+                   Rerion_Simpson$Simpson_Value_Total)
+
+Simpson_Min <- min(Rerion_Simpson$Simpson_Catch_Total,
+                   Rerion_Simpson$Simpson_Value_Total)
+
+
+EffectA=1.5
+
+p_5 <- ggplot(Rerion_Simpson) +
+  aes(x = Simpson_Catch_Total,y = Simpson_Value_Total,color = Year)+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.5) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Region.Name_koh)　+
+  labs(x = "Catch_λ",y = "Value_λ",size="Total_Catch(million ton)") +   
+ #scale_x_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  #scale_y_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(p_5)
+
+
+
+
+```
+
+
+
+
+####Africa America
+```{r}
+Rerion_Simpson1 <- Rerion_Simpson %>% 
+  filter(Region.Name_koh == "Africa"|Region.Name_koh == "Americas") 
+
+EffectA=1.5
+
+q4 <- ggplot(Rerion_Simpson1) +
+  aes(x = Simpson_Catch_Total,y = Simpson_Value_Total,color = Year)+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.5) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Region.Name_koh)　+
+  labs(x = "Catch_λ",y = "Value_λ",size="Total_Catch(milion ton)") +   
+ #scale_x_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  #scale_y_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(q4)
+```
+
+
+####Europe Oceania
+```{r}
+Rerion_Simpson2 <- Rerion_Simpson %>% 
+  filter(Region.Name_koh == "Europe"|Region.Name_koh == "Oceania") 
+
+EffectA=1.5
+
+q5 <- ggplot(Rerion_Simpson2) +
+  aes(x = Simpson_Catch_Total,y = Simpson_Value_Total,color = Year)+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.5) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Region.Name_koh)　+
+  labs(x = "Catch_λ",y = "Value_λ",size="Total_Catch(milion ton)") +   
+ #scale_x_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  #scale_y_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(q5)
+```
+
+
+####Asia
+```{r}
+Rerion_Simpson3 <- Rerion_Simpson %>% 
+  filter(Region.Name_koh == "Asia") 
+
+EffectA=1.5
+
+q6 <- ggplot(Rerion_Simpson3) +
+  aes(x = Simpson_Catch_Total,y = Simpson_Value_Total,color = Year)+
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.5) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Region.Name_koh)　+
+  labs(x = "Catch_λ",y = "Value_λ",size="Total_Catch(milion ton)") +   
+ #scale_x_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  #scale_y_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(q6)
+```
+
+
+
+
+##Shannon
+```{r}
+source("World_Function_Rapha.R")
+
+Region_Shannon <- fun_Shannon3(World_Data,TotalCatch_Tonnes,Total_Value)
+
+Shannon_Max <- max(Region_Shannon$Shannon_Catch_Total,
+                   Region_Shannon$Shannon_Value_Total)
+
+Shannon_Min <- min(Region_Shannon$Shannon_Catch_Total,
+                   Region_Shannon$Shannon_Value_Total)
+
+
+EffectA=1.5
+
+p_6 <- ggplot(Region_Shannon) +
+  aes(x = Shannon_Catch_Total,y = Shannon_Value_Total,color = Year)+
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.5) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+   facet_wrap(~ Region.Name_koh)　+
+  labs(x = "Catch_H'",y = "Value_H'",size="Total_Catch(million ton)") +  
+# scale_x_continuous(limits = c(Shannon_Min,Shannon_Max)) +
+ # scale_y_continuous(limits = c(2.5,Shannon_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(p_6)
+
+```
+
+
+
+
+####Africa America
+```{r}
+Region_Shannon1 <- Region_Shannon %>% 
+  filter(Region.Name_koh == "Africa"|Region.Name_koh == "Americas")
+
+EffectA=1.5
+
+q7 <- ggplot(Region_Shannon1) +
+  aes(x = Shannon_Catch_Total,y = Shannon_Value_Total,color = Year)+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.5) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+   facet_wrap(~ Region.Name_koh)　+
+  labs(x = "Catch_H'",y = "Value_H'",size="Total_Catch(milion ton)") +  
+ #scale_x_continuous(limits = c(Shannon_Min,Shannon_Max)) +
+  #scale_y_continuous(limits = c(2.5,Shannon_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(q7)
+
+```
+
+
+####Europe Oceania
+```{r}
+Region_Shannon2 <- Region_Shannon %>% 
+  filter(Region.Name_koh == "Europe"|Region.Name_koh == "Oceania")
+
+EffectA=1.5
+
+q8 <- ggplot(Region_Shannon2) +
+  aes(x = Shannon_Catch_Total,y = Shannon_Value_Total,color = Year)+
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.5) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+   facet_wrap(~ Region.Name_koh)　+
+  labs(x = "Catch_H'",y = "Value_H'",size="Total_Catch(milion ton)") +  
+ #scale_x_continuous(limits = c(Shannon_Min,Shannon_Max)) +
+  #scale_y_continuous(limits = c(2.5,Shannon_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(q8)
+
+```
+
+
+####Asia
+```{r}
+Region_Shannon3 <- Region_Shannon %>% 
+  filter(Region.Name_koh == "Asia")
+
+EffectA=1.5
+
+q9 <- ggplot(Region_Shannon3) +
+  aes(x = Shannon_Catch_Total,y = Shannon_Value_Total,color = Year)+
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.5) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+   facet_wrap(~ Region.Name_koh)　+
+  labs(x = "Catch_H'",y = "Value_H'",size="Total_Catch(milion ton)") +  
+ #scale_x_continuous(limits = c(Shannon_Min,Shannon_Max)) +
+  #scale_y_continuous(limits = c(2.5,Shannon_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(q9)
+
+```
+
+

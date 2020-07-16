@@ -1,0 +1,191 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+¥123567890---
+title: "World_Data_PortofolioVer1.0"
+author: '@Kohsuke'
+date: "5/27/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Section 1: Code Memo & Log
+
+## (a) Reference:General
+- <The tidyverse style guide by Hadly Wickam> [https://style.tidyverse.org/]
+-　<探索的データ分析> [https://uribo.github.io/practical-ds/01/eda.html]
+
+## (b) Reference:Section Specific 
+<!-- Example 1 　- [Section ...  ]　××××××　 -->　
+<!-- Example 2 　- [Section ×　Portfolio Simulation  ]　××××××　 -->　
+
+
+
+## (c) Remarks/注意事項
+<!-- Example 1 　** ** bold and Section number + reasons 　 -->　
+###**Do NOT run these sections as default: defaultでは走らせないセクション:**
+- saveRDSを無効化
+ 
+## (d) Code log　/コードメモ
+<!-- Example 1 　- [13 May 2020:gaku]石川レポートの初期版提出後にコード整理のために学志がVer.8.0を作成　 -->　
+
+[29 May 2020: 5:59AM gaku] Add country profiles code from UN : https://unstats.un.org/unsd/methodology/m49/overview/
+http://data.un.org/Explorer.aspx
+
+- 
+
+
+# 1 準備：
+## 1-0 概要
+-オリジナルデータから.rdsファイルの作成
+-
+
+## Library読み込む
+```{r echo=TRUE}
+# 現在の環境にある変数の消去
+rm(list = ls(all=TRUE))
+#解析処理に関するセットアップ、パッケージの読み込みなど
+library(tidyverse)
+library(dplyr)
+library(ggsci)
+library(gdata)
+library(DT)
+library(xtable)
+library(openxlsx)
+library(ggrepel)
+library(formattable)
+library(gridExtra)
+library(stringr)
+```
+
+
+
+## オリジナルデータの読み込み
+```{r eval = FALSE}
+
+World_Data <- read.csv("Working_Data/World/World_Fisheries_Data.csv",
+                       header = TRUE,fileEncoding = "CP932")
+
+Country_List <- read.csv("Working_Data/World/Country_Name_29May20_gaku.csv",
+                       header = TRUE,fileEncoding = "CP932")
+
+UN_Country_List <- read.csv("Working_Data/UN_Country_List_koh_29May20.csv",
+                       header = TRUE,fileEncoding = "CP932")
+
+#Ver1.3においてcountryの修正を行ったデータでUN_Country_Listを作成して読み込んだ
+
+
+```
+
+
+
+
+## coutry_ListとWorld_Dataの結合
+```{r eval = FALSE}
+
+Country_List_Int <- left_join(Country_List,UN_Country_List, by="Country.or.Area")
+
+
+#重複している列の削除
+Country_List_Int <- Country_List_Int[c(-5,-6)]
+
+#World_Dataと結合させるために列名の変更列名の変更
+names(Country_List_Int) <- c( "FishingEntityID","FishingEntityName","Country.or.Area","X","Region.Code",
+                              "Region.Name","Region.Name_koh","Sub.region.Code","Sub.region.Name","Sub.region.Name_koh",
+                              "Intermediate.Region.Code","Intermediate.Region.Name","M49.Code","ISO.alpha3.Code",
+                              "Least.Developed.Countries..LDC.","Land.Locked.Developing.Countries..LLDC.",
+                              "Small.Island.Developing.States..SIDS.","Developed...Developing.Countries" )
+
+
+
+World_Data <- left_join(World_Data,Country_List_Int,by = "FishingEntityID")
+```
+
+
+
+## 魚種名とIDを紐付ける
+```{r eval = FALSE}
+Fish_Name <- read.csv("Working_Data/World/Fish_Name_Original.csv",
+                      header = TRUE,fileEncoding = "CP932")
+
+Fish_Name_unique <- as.data.frame(unique(World_Data$TaxonKey))
+
+World_Data <- left_join(World_Data,Fish_Name,by = "TaxonKey")
+
+```
+
+
+UN_Country_Listにおいて"Region.Name_koh"と"Sub.region.Name_koh"がある。
+これは、Region.NameとSub.region.Nameを個人では判断しにくいため、新たな列を自分で付け足した。
+これにより、暫定的にだが、国ごとではなく、地域ごとの多様性指数の算出などが可能になる
+UN_Country_Listにおける"Region.Name_koh"と"Sub.region.Name_koh"では自分ではどの地域に属するのかわからないFishingEntityNameがいくつかあったため、そこはNAのままとなっている。
+誰か有識者に判断してほしい。
+
+
+
+## 正確な水揚げ高の算出
+```{r eval = FALSE}
+# Sea Around US 価格の統合
+World_Data <- World_Data %>% 
+  mutate(TotalCatch_Tonnes_DHC = TotalCatch_Tonnes*DHC_Proportion,
+         TotalCatch_Tonnes_Reduc = TotalCatch_Tonnes*FMFO_Proportion) %>% 
+  mutate(Value_DHC = TotalCatch_Tonnes_DHC*Price.DHC,
+         Value_Reduc = TotalCatch_Tonnes_Reduc*Price.Reduc) %>% 
+  mutate(Total_Value = Value_DHC + Value_Reduc)
+
+```
+
+TotalCatch_tonnesは漁獲された水産物の消費用途を加味していない総漁獲量を表す。
+よって、DHC.PropotionとFMFO_Proportionを用いてTotalCatch_tonnesから各消費用途における漁獲量を算出する。
+そして、算出された各漁獲量とPrice.DHCとPriceReducを掛け合わせ、各消費用途の漁獲高を算出する。
+算出された各漁獲高を足し合わせて、漁獲高を求める。
+
+
+
+
+
+#データクリーニング
+```{r eval = FALSE}
+##data cleaning  remove Catch < 0,Sub.region.Name_koh = NA
+World_Data <- World_Data %>% 
+  filter(!TotalCatch_Tonnes <= 0) %>% 
+  filter(!Total_Value <= 0)
+  
+
+#FishingEntityIDとTaxonKeyをfactorにへんかん
+World_Data$FishingEntityID <- as.factor(World_Data$FishingEntityID)
+World_Data$TaxonKey <- as.factor(World_Data$TaxonKey)
+
+```
+
+
+
+## Catch,Valueでそれぞれランキングをつける
+```{r eval = FALSE}
+source("World_Function.R")
+#各国の漁獲量と漁獲だかを合計した値でランキングをつける
+Production_Ranking <- fun_Catch_Value2(World_Data,TotalCatch_Tonnes,Total_Value)
+
+#World＿Dataと結合するにあたり漁獲量などの数値が邪魔なため削除
+Working_Data <- Production_Ranking[c(-2,-3)]
+#write.csv(Working_Data,file = "Production_Rnaking_Cou.csv")
+
+#World_DataとProduction_RankingをCountry.or.Araeで結合
+World_Data <- left_join(World_Data,Working_Data,by = "Country.or.Area")
+
+
+#saveRDS(World_Data,file = "World_Data_cleaned_6June20_koh.rds")
+```
+
+
+オリジナルデータ：781,060
+クリーニングデータ：670,988
+
+
+
+

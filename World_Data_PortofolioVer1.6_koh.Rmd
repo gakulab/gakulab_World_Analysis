@@ -1,0 +1,3687 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+¥123567890---
+title: "World_Data_PortofolioVer1.6"
+author: '@Kohsuke'
+date: "6/5/2020
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Sub region analysis in this Rmd
+
+- 
+
+
+# 1 準備：
+## 1-0 概要
+-オリジナルデータから.rdsファイルの作成
+-
+
+## Library読み込む
+```{r echo=TRUE}
+# 現在の環境にある変数の消去
+rm(list = ls(all=TRUE))
+#解析処理に関するセットアップ、パッケージの読み込みなど
+library(tidyverse)
+library(dplyr)
+library(ggsci)
+library(gdata)
+library(DT)
+library(xtable)
+library(openxlsx)
+library(ggrepel)
+library(formattable)
+library(gridExtra)
+library(stringr)
+```
+
+
+## 分析データ読み込み
+```{r}
+World_Data <- readRDS("Working_Data/World/World_Data_cleaned_6June20_koh.rds")
+
+
+options(scipen=100000)　#指数表示を避けるコード
+
+```
+
+
+
+
+#  各地域 (サブ)
+## Southern Europe
+```{r}
+Sub_region_Name<- as.data.frame(unique(World_Data$Sub.region.Name_koh))
+
+Southern_Europe <- World_Data %>% 
+  filter(Sub.region.Name_koh == "Southern Europe")
+
+
+```
+
+
+
+### HHI
+```{r}
+source("World_Function_Rapha.R")
+
+Southern_Europe_HHI_Cou <- fun_HHI5(Southern_Europe,TotalCatch_Tonnes,Total_Value)
+
+Southern_Europe_HHI_Ave <- fun_HHI6(Southern_Europe,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Southern_Europe_HHI_Ave <- Southern_Europe_HHI_Ave[-2]
+Southern_Europe_HHI_Ave <- Southern_Europe_HHI_Ave[c(1,6,2,3,4,5)]
+
+Southern_Europe_HHI_Total <- fun_HHI7(Southern_Europe,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Southern_Europe_HHI_Total <- Southern_Europe_HHI_Total[c(1,6,2,3,4,5)]
+
+Southern_Europe_HHI_Weighted <- fun_HHI8(Southern_Europe,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Southern_Europe_HHI_Weighted <- Southern_Europe_HHI_Weighted[-2]
+Southern_Europe_HHI_Weighted <- Southern_Europe_HHI_Weighted[c(1,6,2,3,4,5)]
+
+
+#結合する
+Southern_Europe_HHI <- rbind(Southern_Europe_HHI_Cou,Southern_Europe_HHI_Ave,
+                             Southern_Europe_HHI_Total,Southern_Europe_HHI_Weighted)
+
+Southern_Europe_HHI$Country.or.Area <- as.factor(Southern_Europe_HHI$Country.or.Area)
+
+ 
+#国名はfactorなのでlevelを与え、国名の順番を制御する
+neworder1 = c("Total","Average","Weighted_Ave","Albania","Bosnia and Herzegovina", "Croatia",
+              "Greece","Italy","Malta","Montenegro","Portugal","Slovenia","Spain")
+
+#Country.or.Areaをlevel順にする
+Southern_Europe_HHI <- arrange(mutate(Southern_Europe_HHI,
+             Country.or.Area = factor(Country.or.Area,levels = neworder1)),Country.or.Area)
+
+
+
+HHI_Max <- max(Southern_Europe_HHI$HHI_Catch_Total,Southern_Europe_HHI$HHI_Value_Total)
+HHI_Min <- min(Southern_Europe_HHI$HHI_Catch_Total,Southern_Europe_HHI$HHI_Value_Total)
+
+
+EffectA=1.5
+
+p_7 <- ggplot(Southern_Europe_HHI) +
+  aes(x = HHI_Catch_Total,y = HHI_Value_Total,color = Year) +
+ theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_HHI",y = "Value_HHI",size="Total_Catch(million ton)") +　
+  scale_x_continuous(limits = c(HHI_Min,HHI_Max)) +　　　　　　　　　　　
+  scale_y_continuous(limits = c(HHI_Min,HHI_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+
+print(p_7)
+
+
+```
+
+
+### Simpson
+```{r}
+source("World_Function_Rapha.R")
+
+Southern_Europ_Simpson_Cou <- fun_Simpson4(Southern_Europe,TotalCatch_Tonnes,Total_Value)
+
+Southern_Europe_Simpson_Ave <- fun_Simpson5(Southern_Europe,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Southern_Europe_Simpson_Ave <- Southern_Europe_Simpson_Ave[-2]
+Southern_Europe_Simpson_Ave <- Southern_Europe_Simpson_Ave[c(1,6,2,3,4,5)]
+
+Southern_Europe_Simpson_Total <- fun_Simpson6(Southern_Europe,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Southern_Europe_Simpson_Total <- Southern_Europe_Simpson_Total[c(1,6,2,3,4,5)]
+
+Southern_Europe_Simpson_Weighted <- fun_Simpson7(Southern_Europe,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Southern_Europe_Simpson_Weighted <- Southern_Europe_Simpson_Weighted[-2]
+Southern_Europe_Simpson_Weighted <- Southern_Europe_Simpson_Weighted[c(1,6,2,3,4,5)]
+
+#結合する
+Southern_Europe_Simpson <- rbind(Southern_Europ_Simpson_Cou,Southern_Europe_Simpson_Ave,
+                                 Southern_Europe_Simpson_Total,Southern_Europe_Simpson_Weighted)
+
+
+
+
+
+#Country.or.Areaをlevel順にする
+Southern_Europe_Simpson <- arrange(mutate(Southern_Europe_Simpson,
+             Country.or.Area = factor(Country.or.Area,levels = neworder1)),Country.or.Area)
+
+Simpson_Max <- max(Southern_Europe_Simpson$Simpson_Catch_Total,
+                   Southern_Europe_Simpson$Simpson_Value_Total)
+
+Simpson_Min <- min(Southern_Europe_Simpson$Simpson_Catch_Total,
+                   Southern_Europe_Simpson$Simpson_Value_Total)
+
+
+EffectA=1.5
+
+p_8 <- ggplot(Southern_Europe_Simpson) +
+  aes(x = Simpson_Catch_Total,y = Simpson_Value_Total,color = Year)+
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_λ",y = "Value_λ",size="Total_Catch(million ton)") +   
+ scale_x_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  scale_y_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(p_8)
+
+
+
+```
+
+
+
+### Shannon
+```{r}
+source("World_Function_Rapha.R")
+
+Southern_Europ_Shannon_Cou <- fun_Shannon4(Southern_Europe,TotalCatch_Tonnes,Total_Value)
+
+Southern_Europe_Shannon_Ave <- fun_Shannon5(Southern_Europe,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Southern_Europe_Shannon_Ave <- Southern_Europe_Shannon_Ave[-2]
+Southern_Europe_Shannon_Ave <- Southern_Europe_Shannon_Ave[c(1,6,2,3,4,5)]
+
+Southern_Europe_Shannon_Total <- fun_Shannon6(Southern_Europe,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Southern_Europe_Shannon_Total <- Southern_Europe_Shannon_Total[c(1,6,2,3,4,5)]
+
+
+Southern_Europe_Shannon_Weighted <- fun_Shannon7(Southern_Europe,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Southern_Europe_Shannon_Weighted <- Southern_Europe_Shannon_Weighted[-2]
+Southern_Europe_Shannon_Weighted <- Southern_Europe_Shannon_Weighted[c(1,6,2,3,4,5)]
+
+
+#結合する
+Southern_Europe_Shannon <- rbind(Southern_Europ_Shannon_Cou,Southern_Europe_Shannon_Ave,
+                                 Southern_Europe_Shannon_Total,Southern_Europe_Shannon_Weighted)
+
+#Country.or.Areaをlevel順にする
+Southern_Europe_Shannon <- arrange(mutate(Southern_Europe_Shannon,
+             Country.or.Area = factor(Country.or.Area,levels = neworder1)),Country.or.Area)
+
+
+Shannon_Max <- max(Southern_Europe_Shannon$Shannon_Catch_Total,
+                   Southern_Europe_Shannon$Shannon_Value_Total)
+
+Shanon_Min <- min(Southern_Europe_Shannon$Shannon_Catch_Total,
+                   Southern_Europe_Shannon$Shannon_Value_Total)
+
+
+EffectA=1.5
+
+p_9 <- ggplot(Southern_Europe_Shannon) +
+  aes(x = Shannon_Catch_Total,y = Shannon_Value_Total,color = Year)+
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_H'",y = "Value_H'",size="Total_Catch(million ton)") +   
+ scale_x_continuous(limits = c(Shanon_Min,Shannon_Max)) +
+  scale_y_continuous(limits = c(Shanon_Min,Shannon_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(p_9)
+
+
+
+```
+
+
+
+## Northern Europe
+```{r}
+Northern_Europe <- World_Data %>% 
+  filter(Sub.region.Name_koh == "Northern Europe")
+
+```
+
+
+
+
+### HHI
+```{r}
+source("World_Function_Rapha.R")
+
+Northern_Europe_HHI_Cou <- fun_HHI5(Northern_Europe,TotalCatch_Tonnes,Total_Value)
+
+Northern_Europe_HHI_Ave <- fun_HHI6(Northern_Europe,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Northern_Europe_HHI_Ave <- Northern_Europe_HHI_Ave[-2]
+Northern_Europe_HHI_Ave <- Northern_Europe_HHI_Ave[c(1,6,2,3,4,5)]
+
+Northern_Europe_HHI_Total <- fun_HHI7(Northern_Europe,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Northern_Europe_HHI_Total <- Northern_Europe_HHI_Total[c(1,6,2,3,4,5)]
+
+Northern_Europe_HHI_Weighted <- fun_HHI8(Northern_Europe,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Northern_Europe_HHI_Weighted <- Northern_Europe_HHI_Weighted[-2]
+Northern_Europe_HHI_Weighted <- Northern_Europe_HHI_Weighted[c(1,6,2,3,4,5)]
+
+
+#結合する
+Northern_Europe_HHI <- rbind(Northern_Europe_HHI_Cou,Northern_Europe_HHI_Ave,
+                             Northern_Europe_HHI_Total,Northern_Europe_HHI_Weighted)
+
+#国名はfactorなのでlevelを与え、国名の順番を制御する
+neworder2 = c("Total","Average","Weighted_Ave","Denmark","Estonia","Finland","Iceland",
+              "Ireland","Latvia","Lithuania","Norway","Sweden")
+
+Northern_Europe_HHI$Country.or.Area <- as.factor(Northern_Europe_HHI$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Northern_Europe_HHI <- arrange(mutate(Northern_Europe_HHI,
+             Country.or.Area = factor(Country.or.Area,levels = neworder2)),Country.or.Area)
+
+HHI_Max <- max(Northern_Europe_HHI$HHI_Catch_Total,Northern_Europe_HHI$HHI_Value_Total)
+HHI_Min <- min(Northern_Europe_HHI$HHI_Catch_Total,Northern_Europe_HHI$HHI_Value_Total)
+
+
+EffectA=1.5
+
+p_10 <- ggplot(Northern_Europe_HHI) +
+  aes(x = HHI_Catch_Total,y = HHI_Value_Total,color = Year) +
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_HHI",y = "Value_HHI",size="Total_Catch(million ton)") +　
+  scale_x_continuous(limits = c(HHI_Min,HHI_Max)) +　　　　　　　　　　　
+  scale_y_continuous(limits = c(HHI_Min,HHI_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+
+print(p_10)
+
+
+```
+
+
+### Simpson
+```{r}
+source("World_Function_Rapha.R")
+
+Northern_Europe_Simpson_Cou <- fun_Simpson4(Northern_Europe,TotalCatch_Tonnes,Total_Value)
+
+Northern_Europe_Simpson_Ave <- fun_Simpson5(Northern_Europe,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Northern_Europe_Simpson_Ave <- Northern_Europe_Simpson_Ave[-2]
+Northern_Europe_Simpson_Ave <- Northern_Europe_Simpson_Ave[c(1,6,2,3,4,5)]
+
+Northern_Europe_Simpson_Total <- fun_Simpson6(Northern_Europe,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Northern_Europe_Simpson_Total <- Northern_Europe_Simpson_Total[c(1,6,2,3,4,5)]
+
+
+Northern_Europe_Simpson_Weighted <- fun_Simpson7(Northern_Europe,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Northern_Europe_Simpson_Weighted <- Northern_Europe_Simpson_Weighted[-2]
+Northern_Europe_Simpson_Weighted <- Northern_Europe_Simpson_Weighted[c(1,6,2,3,4,5)]
+
+
+#結合する
+Northern_Europe_Simpson <- rbind(Northern_Europe_Simpson_Cou,Northern_Europe_Simpson_Ave,
+                                 Northern_Europe_Simpson_Total,Northern_Europe_Simpson_Weighted)
+
+Northern_Europe_Simpson$Country.or.Area <- as.factor(Northern_Europe_Simpson$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Northern_Europe_Simpson <- arrange(mutate(Northern_Europe_Simpson,
+             Country.or.Area = factor(Country.or.Area,levels = neworder2)),Country.or.Area)
+
+
+Simpson_Max <- max(Northern_Europe_Simpson$Simpson_Catch_Total,
+                   Northern_Europe_Simpson$Simpson_Value_Total)
+
+Simpson_Min <- min(Northern_Europe_Simpson$Simpson_Catch_Total,
+                   Northern_Europe_Simpson$Simpson_Value_Total)
+
+
+EffectA=1.5
+
+p_11 <- ggplot(Northern_Europe_Simpson) +
+  aes(x = Simpson_Catch_Total,y = Simpson_Value_Total,color = Year)+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_λ",y = "Value_λ",size="Total_Catch(million ton)") +   
+ scale_x_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  scale_y_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(p_11)
+
+
+
+```
+
+
+
+### Shannon
+```{r}
+source("World_Function_Rapha.R")
+
+Northern_Europe_Shannon_Cou <- fun_Shannon4(Northern_Europe,TotalCatch_Tonnes,Total_Value)
+
+Northern_Europe_Shannon_Ave <- fun_Shannon5(Northern_Europe,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Northern_Europe_Shannon_Ave <- Northern_Europe_Shannon_Ave[-2]
+Northern_Europe_Shannon_Ave <- Northern_Europe_Shannon_Ave[c(1,6,2,3,4,5)]
+
+Northern_Europe_Shannon_Total <- fun_Shannon6(Northern_Europe,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Northern_Europe_Shannon_Total <- Northern_Europe_Shannon_Total[c(1,6,2,3,4,5)]
+
+
+Northern_Europe_Shannon_Weighted <- fun_Shannon7(Northern_Europe,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Northern_Europe_Shannon_Weighted <- Northern_Europe_Shannon_Weighted[-2]
+Northern_Europe_Shannon_Weighted <- Northern_Europe_Shannon_Weighted[c(1,6,2,3,4,5)]
+
+#結合する
+Northern_Europe_Shannon <- rbind(Northern_Europe_Shannon_Cou,Northern_Europe_Shannon_Ave,
+                                 Northern_Europe_Shannon_Total,Northern_Europe_Shannon_Weighted)
+
+Northern_Europe_Shannon$Country.or.Area <- as.factor(Northern_Europe_Shannon$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Northern_Europe_Shannon <- arrange(mutate(Northern_Europe_Shannon,
+             Country.or.Area = factor(Country.or.Area,levels = neworder2)),Country.or.Area)
+
+Shannon_Max <- max(Northern_Europe_Shannon$Shannon_Catch_Total,
+                   Northern_Europe_Shannon$Shannon_Value_Total)
+
+Shanon_Min <- min(Northern_Europe_Shannon$Shannon_Catch_Total,
+                   Northern_Europe_Shannon$Shannon_Value_Total)
+
+
+EffectA=1.5
+
+p_12 <- ggplot(Northern_Europe_Shannon) +
+  aes(x = Shannon_Catch_Total,y = Shannon_Value_Total,color = Year)+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_H'",y = "Value_H'",size="Total_Catch(million ton)") +   
+ scale_x_continuous(limits = c(Shanon_Min,Shannon_Max)) +
+  scale_y_continuous(limits = c(Shanon_Min,Shannon_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(p_12)
+
+
+
+```
+
+
+
+## Western Europe
+```{r}
+
+Western_Europe <- World_Data %>% 
+  filter(Sub.region.Name_koh == "Western Europe")
+
+
+
+```
+
+
+
+
+### HHI
+```{r}
+source("World_Function_Rapha.R")
+
+Western_Europe_HHI_Cou <- fun_HHI5(Western_Europe,TotalCatch_Tonnes,Total_Value)
+
+Western_Europe_HHI_Ave <- fun_HHI6(Western_Europe,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Western_Europe_HHI_Ave <- Western_Europe_HHI_Ave[-2]
+Western_Europe_HHI_Ave <- Western_Europe_HHI_Ave[c(1,6,2,3,4,5)]
+
+Western_Europe_HHI_Total <- fun_HHI7(Western_Europe,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Western_Europe_HHI_Total <- Western_Europe_HHI_Total[c(1,6,2,3,4,5)]
+
+Western_Europe_HHI_Weighted <- fun_HHI8(Western_Europe,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Western_Europe_HHI_Weighted <- Western_Europe_HHI_Weighted[-2]
+Western_Europe_HHI_Weighted <- Western_Europe_HHI_Weighted[c(1,6,2,3,4,5)]
+
+#結合する
+Western_Europe_HHI <- rbind(Western_Europe_HHI_Cou,Western_Europe_HHI_Ave,
+                            Western_Europe_HHI_Total,Western_Europe_HHI_Weighted)
+
+#国名はfactorなのでlevelを与え、国名の順番を制御する
+neworder3 = c("Total","Average","Weighted_Ave","Belgium","France","Germany","Netherlands")
+
+Western_Europe_HHI$Country.or.Area <- as.factor(Western_Europe_HHI$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Western_Europe_HHI <- arrange(mutate(Western_Europe_HHI,
+             Country.or.Area = factor(Country.or.Area,levels = neworder3)),Country.or.Area)
+
+HHI_Max <- max(Western_Europe_HHI$HHI_Catch_Total,
+               Western_Europe_HHI$HHI_Value_Total)
+HHI_Min <- min(Western_Europe_HHI$HHI_Catch_Total,
+               Western_Europe_HHI$HHI_Value_Total)
+
+
+EffectA=1.5
+
+p_13 <- ggplot(Western_Europe_HHI) +
+  aes(x = HHI_Catch_Total,y = HHI_Value_Total,color = Year) +
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_HHI",y = "Value_HHI",size="Total_Catch(million ton)") +　
+  scale_x_continuous(limits = c(HHI_Min,HHI_Max)) +　　　　　　　　　　　
+  scale_y_continuous(limits = c(HHI_Min,HHI_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+
+print(p_13)
+
+
+```
+
+
+### Simpson
+```{r}
+source("World_Function_Rapha.R")
+
+Western_Europe_Simpson_Cou <- fun_Simpson4(Western_Europe,TotalCatch_Tonnes,Total_Value)
+
+Western_Europe_Simpson_Ave <- fun_Simpson5(Western_Europe,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Western_Europe_Simpson_Ave <- Western_Europe_Simpson_Ave[-2]
+Western_Europe_Simpson_Ave <- Western_Europe_Simpson_Ave[c(1,6,2,3,4,5)]
+
+Western_Europe_Simpson_Total <- fun_Simpson6(Western_Europe,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Western_Europe_Simpson_Total <- Western_Europe_Simpson_Total[c(1,6,2,3,4,5)]
+
+Western_Europe_Simpson_Weighted <- fun_Simpson7(Western_Europe,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Western_Europe_Simpson_Weighted <- Western_Europe_Simpson_Weighted[-2]
+Western_Europe_Simpson_Weighted <- Western_Europe_Simpson_Weighted[c(1,6,2,3,4,5)]
+
+#結合する
+Western_Europe_Simpson <- rbind(Western_Europe_Simpson_Cou,Western_Europe_Simpson_Ave,
+                                Western_Europe_Simpson_Total,Western_Europe_Simpson_Weighted)
+
+Western_Europe_Simpson$Country.or.Area <- as.factor(Western_Europe_Simpson$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Western_Europe_Simpson <- arrange(mutate(Western_Europe_Simpson,
+             Country.or.Area = factor(Country.or.Area,levels = neworder3)),Country.or.Area)
+
+
+Simpson_Max <- max(Western_Europe_Simpson$Simpson_Catch_Total,
+                   Western_Europe_Simpson$Simpson_Value_Total)
+
+Simpson_Min <- min(Western_Europe_Simpson$Simpson_Catch_Total,
+                   Western_Europe_Simpson$Simpson_Value_Total)
+
+
+EffectA=1.5
+
+p_14 <- ggplot(Western_Europe_Simpson) +
+  aes(x = Simpson_Catch_Total,y = Simpson_Value_Total,color = Year)+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_λ",y = "Value_λ",size="Total_Catch(million ton)") +   
+ scale_x_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  scale_y_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(p_14)
+
+
+
+```
+
+
+
+### Shannon
+```{r}
+source("World_Function_Rapha.R")
+
+Western_Europe_Shannon_Cou <- fun_Shannon4(Western_Europe,TotalCatch_Tonnes,Total_Value)
+
+Western_Europe_Shannon_Ave <- fun_Shannon5(Western_Europe,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Western_Europe_Shannon_Ave <- Western_Europe_Shannon_Ave[-2]
+Western_Europe_Shannon_Ave <- Western_Europe_Shannon_Ave[c(1,6,2,3,4,5)]
+
+Western_Europe_Shannon_Total <- fun_Shannon6(Western_Europe,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Western_Europe_Shannon_Total <- Western_Europe_Shannon_Total[c(1,6,2,3,4,5)]
+
+Western_Europe_Shannon_Weighted <- fun_Shannon7(Western_Europe,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Western_Europe_Shannon_Weighted <- Western_Europe_Shannon_Weighted[-2]
+Western_Europe_Shannon_Weighted <- Western_Europe_Shannon_Weighted[c(1,6,2,3,4,5)]
+
+
+#結合する
+Western_Europe_Shannon <- rbind(Western_Europe_Shannon_Cou,Western_Europe_Shannon_Ave,
+                                Western_Europe_Shannon_Total,Western_Europe_Shannon_Weighted)
+
+Western_Europe_Shannon$Country.or.Area <- as.factor(Western_Europe_Shannon$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Western_Europe_Shannon <- arrange(mutate(Western_Europe_Shannon,
+             Country.or.Area = factor(Country.or.Area,levels = neworder3)),Country.or.Area)
+
+Shannon_Max <- max(Western_Europe_Shannon$Shannon_Catch_Total,
+                   Western_Europe_Shannon$Shannon_Value_Total)
+
+Shanon_Min <- min(Western_Europe_Shannon$Shannon_Catch_Total,
+                   Western_Europe_Shannon$Shannon_Value_Total)
+
+
+EffectA=1.5
+
+p_15 <- ggplot(Western_Europe_Shannon) +
+  aes(x = Shannon_Catch_Total,y = Shannon_Value_Total,color = Year)+
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_H'",y = "Value_H'",size="Total_Catch(million ton)") +   
+ scale_x_continuous(limits = c(Shanon_Min,Shannon_Max)) +
+  scale_y_continuous(limits = c(Shanon_Min,Shannon_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(p_15)
+
+
+
+```
+
+
+
+## 	Eastern Europe
+```{r}
+
+	Eastern_Europe <- World_Data %>% 
+  filter(Sub.region.Name_koh == "Eastern Europe")
+
+
+
+```
+
+
+
+
+### HHI
+```{r}
+source("World_Function_Rapha.R")
+
+Eastern_Europe_HHI_Cou <- fun_HHI5(Eastern_Europe,TotalCatch_Tonnes,Total_Value)
+
+Eastern_Europe_HHI_Ave <- fun_HHI6(Eastern_Europe,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Eastern_Europe_HHI_Ave <- Eastern_Europe_HHI_Ave[-2]
+Eastern_Europe_HHI_Ave <- Eastern_Europe_HHI_Ave[c(1,6,2,3,4,5)]
+
+Eastern_Europe_HHI_Total <- fun_HHI7(Eastern_Europe,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Eastern_Europe_HHI_Total <- Eastern_Europe_HHI_Total[c(1,6,2,3,4,5)]
+
+
+Eastern_Europe_HHI_Weighted <- fun_HHI8(Eastern_Europe,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Eastern_Europe_HHI_Weighted <- Eastern_Europe_HHI_Weighted[-2]
+Eastern_Europe_HHI_Weighted <- Eastern_Europe_HHI_Weighted[c(1,6,2,3,4,5)]
+
+#結合する
+Eastern_Europe_HHI <- rbind(Eastern_Europe_HHI_Cou,Eastern_Europe_HHI_Ave,
+                            Eastern_Europe_HHI_Total,Eastern_Europe_HHI_Weighted)
+
+#国名はfactorなのでlevelを与え、国名の順番を制御する
+neworder4 = c("Total","Average","Weighted_Ave","Bulgaria","Poland","Romania","Russian Federation","Ukraine")
+
+Eastern_Europe_HHI$Country.or.Area <- as.factor(Eastern_Europe_HHI$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Eastern_Europe_HHI <- arrange(mutate(Eastern_Europe_HHI,
+             Country.or.Area = factor(Country.or.Area,levels = neworder4)),Country.or.Area)
+
+HHI_Max <- max(Eastern_Europe_HHI$HHI_Catch_Total,
+               Eastern_Europe_HHI$HHI_Value_Total)
+HHI_Min <- min(Eastern_Europe_HHI$HHI_Catch_Total,
+               Eastern_Europe_HHI$HHI_Value_Total)
+
+
+EffectA=1.5
+
+p_16 <- ggplot(Eastern_Europe_HHI) +
+  aes(x = HHI_Catch_Total,y = HHI_Value_Total,color = Year) +
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_HHI",y = "Value_HHI",size="Total_Catch(million ton)") +　
+  scale_x_continuous(limits = c(HHI_Min,HHI_Max)) +　　　　　　　　　　　
+  scale_y_continuous(limits = c(HHI_Min,HHI_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+
+print(p_16)
+
+
+```
+
+
+### Simpson
+```{r}
+source("World_Function_Rapha.R")
+
+Eastern_Europe_Simpson_Cou <- fun_Simpson4(Eastern_Europe,TotalCatch_Tonnes,Total_Value)
+
+Eastern_Europe_Simpson_Ave <- fun_Simpson5(Eastern_Europe,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Eastern_Europe_Simpson_Ave <- Eastern_Europe_Simpson_Ave[-2]
+Eastern_Europe_Simpson_Ave <- Eastern_Europe_Simpson_Ave[c(1,6,2,3,4,5)]
+
+Eastern_Europe_Simpson_Total <- fun_Simpson6(Eastern_Europe,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Eastern_Europe_Simpson_Total <- Eastern_Europe_Simpson_Total[c(1,6,2,3,4,5)]
+
+Eastern_Europe_Simpson_Weighted <- fun_Simpson7(Eastern_Europe,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Eastern_Europe_Simpson_Weighted <- Eastern_Europe_Simpson_Weighted[-2]
+Eastern_Europe_Simpson_Weighted <- Eastern_Europe_Simpson_Weighted[c(1,6,2,3,4,5)]
+
+
+#結合する
+Eastern_Europe_Simpson <- rbind(Eastern_Europe_Simpson_Cou,Eastern_Europe_Simpson_Ave,
+                                Eastern_Europe_Simpson_Total,Eastern_Europe_Simpson_Weighted)
+
+Eastern_Europe_Simpson$Country.or.Area <- as.factor(Eastern_Europe_Simpson$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Eastern_Europe_Simpson <- arrange(mutate(Eastern_Europe_Simpson,
+             Country.or.Area = factor(Country.or.Area,levels = neworder4)),Country.or.Area)
+
+Simpson_Max <- max(Eastern_Europe_Simpson$Simpson_Catch_Total,
+                   Eastern_Europe_Simpson$Simpson_Value_Total)
+
+Simpson_Min <- min(Eastern_Europe_Simpson$Simpson_Catch_Total,
+                   Eastern_Europe_Simpson$Simpson_Value_Total)
+
+
+EffectA=1.5
+
+p_17 <- ggplot(Eastern_Europe_Simpson) +
+  aes(x = Simpson_Catch_Total,y = Simpson_Value_Total,color = Year)+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_λ",y = "Value_λ",size="Total_Catch(million ton)") +   
+ scale_x_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  scale_y_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(p_17)
+
+
+
+```
+
+
+
+### Shannon
+```{r}
+source("World_Function_Rapha.R")
+
+Eastern_Europe_Shannon_Cou <- fun_Shannon4(Eastern_Europe,TotalCatch_Tonnes,Total_Value)
+
+Eastern_Europe_Shannon_Ave <- fun_Shannon5(Eastern_Europe,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Eastern_Europe_Shannon_Ave <- Eastern_Europe_Shannon_Ave[-2]
+Eastern_Europe_Shannon_Ave <- Eastern_Europe_Shannon_Ave[c(1,6,2,3,4,5)]
+
+Eastern_Europe_Shannon_Total <- fun_Shannon6(Eastern_Europe,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Eastern_Europe_Shannon_Total <- Eastern_Europe_Shannon_Total[c(1,6,2,3,4,5)]
+
+Eastern_Europe_Shannon_Weighted <- fun_Shannon7(Eastern_Europe,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Eastern_Europe_Shannon_Weighted <- Eastern_Europe_Shannon_Weighted[-2]
+Eastern_Europe_Shannon_Weighted <- Eastern_Europe_Shannon_Weighted[c(1,6,2,3,4,5)]
+
+
+#結合する
+Eastern_Europe_Shannon <- rbind(Eastern_Europe_Shannon_Cou,Eastern_Europe_Shannon_Ave,
+                                Eastern_Europe_Shannon_Total,Eastern_Europe_Shannon_Weighted)
+
+Eastern_Europe_Shannon$Country.or.Area <- as.factor(Eastern_Europe_Shannon$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Eastern_Europe_Shannon <- arrange(mutate(Eastern_Europe_Shannon,
+             Country.or.Area = factor(Country.or.Area,levels = neworder4)),Country.or.Area)
+
+Shannon_Max <- max(Eastern_Europe_Shannon$Shannon_Catch_Total,
+                   Eastern_Europe_Shannon$Shannon_Value_Total)
+
+Shanon_Min <- min(Eastern_Europe_Shannon$Shannon_Catch_Total,
+                   Eastern_Europe_Shannon$Shannon_Value_Total)
+
+
+EffectA=1.5
+
+p_18 <- ggplot(Eastern_Europe_Shannon) +
+  aes(x = Shannon_Catch_Total,y = Shannon_Value_Total,color = Year)+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_H'",y = "Value_H'",size="Total_Catch(million ton)") +   
+ scale_x_continuous(limits = c(Shanon_Min,Shannon_Max)) +
+  scale_y_continuous(limits = c(Shanon_Min,Shannon_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(p_18)
+
+
+
+```
+
+
+
+## 	Northern Africa
+```{r}
+
+Northern_Africa <- World_Data %>% 
+  filter(Sub.region.Name_koh == "Northern Africa")
+
+
+
+```
+
+
+
+
+### HHI
+```{r}
+source("World_Function_Rapha.R")
+
+Northern_Africa_HHI_Cou <- fun_HHI5(Northern_Africa,TotalCatch_Tonnes,Total_Value)
+
+Northern_Africa_HHI_Ave <- fun_HHI6(Northern_Africa,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Northern_Africa_HHI_Ave <- Northern_Africa_HHI_Ave[-2]
+Northern_Africa_HHI_Ave <- Northern_Africa_HHI_Ave[c(1,6,2,3,4,5)]
+
+Northern_Africa_HHI_Total <- fun_HHI7(Northern_Africa,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Northern_Africa_HHI_Total <- Northern_Africa_HHI_Total[c(1,6,2,3,4,5)]
+
+
+Northern_Africa_HHI_Weighted <- fun_HHI8(Northern_Africa,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Northern_Africa_HHI_Weighted <- Northern_Africa_HHI_Weighted[-2]
+Northern_Africa_HHI_Weighted <- Northern_Africa_HHI_Weighted[c(1,6,2,3,4,5)]
+
+#結合する
+Northern_Africa_HHI <- rbind(Northern_Africa_HHI_Cou,Northern_Africa_HHI_Ave,
+                             Northern_Africa_HHI_Total,Northern_Africa_HHI_Weighted)
+
+#国名はfactorなのでlevelを与え、国名の順番を制御する
+neworder5 = c("Total","Average","Weighted_Ave","Algeria","Egypt","Libya","Morocco","Sudan","Tunisia")
+
+Northern_Africa_HHI$Country.or.Area <- as.factor(Northern_Africa_HHI$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Northern_Africa_HHI <- arrange(mutate(Northern_Africa_HHI,
+             Country.or.Area = factor(Country.or.Area,levels = neworder5)),Country.or.Area)
+
+HHI_Max <- max(Northern_Africa_HHI$HHI_Catch_Total,
+               Northern_Africa_HHI$HHI_Value_Total)
+HHI_Min <- min(Northern_Africa_HHI$HHI_Catch_Total,
+               Northern_Africa_HHI$HHI_Value_Total)
+
+
+EffectA=1.5
+
+p_19 <- ggplot(Northern_Africa_HHI) +
+  aes(x = HHI_Catch_Total,y = HHI_Value_Total,color = Year) +
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_HHI",y = "Value_HHI",size="Total_Catch(million ton)") +　
+  scale_x_continuous(limits = c(HHI_Min,HHI_Max)) +　　　　　　　　　　　
+  scale_y_continuous(limits = c(HHI_Min,HHI_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+
+print(p_19)
+
+
+```
+
+
+### Simpson
+```{r}
+source("World_Function_Rapha.R")
+
+Northern_Africa_Simpson_Cou <- fun_Simpson4(Northern_Africa,TotalCatch_Tonnes,Total_Value)
+
+Northern_Africa_Simpson_Ave <- fun_Simpson5(Northern_Africa,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Northern_Africa_Simpson_Ave <- Northern_Africa_Simpson_Ave[-2]
+Northern_Africa_Simpson_Ave <- Northern_Africa_Simpson_Ave[c(1,6,2,3,4,5)]
+
+Northern_Africa_Simpson_Total <- fun_Simpson6(Northern_Africa,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Northern_Africa_Simpson_Total <- Northern_Africa_Simpson_Total[c(1,6,2,3,4,5)]
+
+Northern_Africa_Simpson_Weighted <- fun_Simpson7(Northern_Africa,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Northern_Africa_Simpson_Weighted <- Northern_Africa_Simpson_Weighted[-2]
+Northern_Africa_Simpson_Weighted <- Northern_Africa_Simpson_Weighted[c(1,6,2,3,4,5)]
+
+#結合する
+Northern_Africa_Simpson <- rbind(Northern_Africa_Simpson_Cou,Northern_Africa_Simpson_Ave,
+                                 Northern_Africa_Simpson_Total,Northern_Africa_Simpson_Weighted)
+
+Northern_Africa_Simpson$Country.or.Area <- as.factor(Northern_Africa_Simpson$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Northern_Africa_Simpson <- arrange(mutate(Northern_Africa_Simpson,
+             Country.or.Area = factor(Country.or.Area,levels = neworder5)),Country.or.Area)
+
+Simpson_Max <- max(Northern_Africa_Simpson$Simpson_Catch_Total,
+                   Northern_Africa_Simpson$Simpson_Value_Total)
+
+Simpson_Min <- min(Northern_Africa_Simpson$Simpson_Catch_Total,
+                   Northern_Africa_Simpson$Simpson_Value_Total)
+
+
+EffectA=1.5
+
+p_20 <- ggplot(Northern_Africa_Simpson) +
+  aes(x = Simpson_Catch_Total,y = Simpson_Value_Total,color = Year)+
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_λ",y = "Value_λ",size="Total_Catch(million ton)") +   
+ scale_x_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  scale_y_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(p_20)
+
+
+
+```
+
+
+
+### Shannon
+```{r}
+source("World_Function_Rapha.R")
+
+Northern_Africa_Shannon_Cou <- fun_Shannon4(Northern_Africa,TotalCatch_Tonnes,Total_Value)
+
+Northern_Africa_Shannon_Ave <- fun_Shannon5(Northern_Africa,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Northern_Africa_Shannon_Ave <- Northern_Africa_Shannon_Ave[-2]
+Northern_Africa_Shannon_Ave <- Northern_Africa_Shannon_Ave[c(1,6,2,3,4,5)]
+
+Northern_Africa_Shannon_Total <- fun_Shannon6(Northern_Africa,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Northern_Africa_Shannon_Total <- Northern_Africa_Shannon_Total[c(1,6,2,3,4,5)]
+
+
+Northern_Africa_Shannon_Weighted <- fun_Shannon7(Northern_Africa,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Northern_Africa_Shannon_Weighted <- Northern_Africa_Shannon_Weighted[-2]
+Northern_Africa_Shannon_Weighted <- Northern_Africa_Shannon_Weighted[c(1,6,2,3,4,5)]
+
+#結合する
+Northern_Africa_Shannon <- rbind(Northern_Africa_Shannon_Cou,Northern_Africa_Shannon_Ave,
+                                 Northern_Africa_Shannon_Total,Northern_Africa_Shannon_Weighted)
+
+Northern_Africa_Shannon$Country.or.Area <- as.factor(Northern_Africa_Shannon$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Northern_Africa_Shannon <- arrange(mutate(Northern_Africa_Shannon,
+             Country.or.Area = factor(Country.or.Area,levels = neworder5)),Country.or.Area)
+
+
+Shannon_Max <- max(Northern_Africa_Shannon$Shannon_Catch_Total,
+                   Northern_Africa_Shannon$Shannon_Value_Total)
+
+Shanon_Min <- min(Northern_Africa_Shannon$Shannon_Catch_Total,
+                   Northern_Africa_Shannon$Shannon_Value_Total)
+
+
+EffectA=1.5
+
+p_21 <- ggplot(Northern_Africa_Shannon) +
+  aes(x = Shannon_Catch_Total,y = Shannon_Value_Total,color = Year)+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_H'",y = "Value_H'",size="Total_Catch(million ton)") +   
+ scale_x_continuous(limits = c(Shanon_Min,Shannon_Max)) +
+  scale_y_continuous(limits = c(Shanon_Min,Shannon_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(10/EffectA,30/EffectA))
+
+print(p_21)
+
+
+
+```
+
+
+
+## 	Sub-Saharan Africa
+```{r}
+
+Sub_Saharan_Africa <- World_Data %>% 
+  filter(Sub.region.Name_koh == "Sub-Saharan Africa")
+
+
+
+```
+
+
+
+
+### HHI
+```{r}
+source("World_Function_Rapha.R")
+
+Sub_Saharan_Africa_HHI_Cou <- fun_HHI5(Sub_Saharan_Africa,TotalCatch_Tonnes,Total_Value)
+
+Sub_Saharan_Africa_HHI_Ave <- fun_HHI6(Sub_Saharan_Africa,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Sub_Saharan_Africa_HHI_Ave <- Sub_Saharan_Africa_HHI_Ave[-2]
+Sub_Saharan_Africa_HHI_Ave <- Sub_Saharan_Africa_HHI_Ave[c(1,6,2,3,4,5)]
+
+Sub_Saharan_Africa_HHI_Total <- fun_HHI7(Sub_Saharan_Africa,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Sub_Saharan_Africa_HHI_Total <- Sub_Saharan_Africa_HHI_Total[c(1,6,2,3,4,5)]
+
+Sub_Saharan_Africa_HHI_Weighted <- fun_HHI8(Sub_Saharan_Africa,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Sub_Saharan_Africa_HHI_Weighted <- Sub_Saharan_Africa_HHI_Weighted[-2]
+Sub_Saharan_Africa_HHI_Weighted <- Sub_Saharan_Africa_HHI_Weighted[c(1,6,2,3,4,5)]
+
+
+
+#結合する
+Sub_Saharan_Africa_HHI <- rbind(Sub_Saharan_Africa_HHI_Cou,Sub_Saharan_Africa_HHI_Ave,
+                                Sub_Saharan_Africa_HHI_Total,Sub_Saharan_Africa_HHI_Weighted)
+
+#国名はfactorなのでlevelを与え、国名の順番を制御する
+neworder6 = c("Total","Average","Weighted_Ave","Angola","Benin","Cabo Verde","Cameroon","Comoros","Congo","Djibouti",
+              "Equatorial Guinea",
+              "Eritrea","Gabon","Gambia","Ghana","Guinea","Guinea-Bissau","Kenya","Liberia","Madagascar","Mauritania",
+              "Mauritius","Mayotte","Mozambique","Namibia","Nigeria","Saint Helena","Sao Tome and Principe",
+              "Senegal","Seychelles","Sierra Leone","Somalia","South Africa","Tanzania","Togo" )
+
+Sub_Saharan_Africa_HHI$Country.or.Area <- as.factor(Sub_Saharan_Africa_HHI$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Sub_Saharan_Africa_HHI <- arrange(mutate(Sub_Saharan_Africa_HHI,
+             Country.or.Area = factor(Country.or.Area,levels = neworder6)),Country.or.Area)
+
+HHI_Max <- max(Sub_Saharan_Africa_HHI$HHI_Catch_Total,
+               Sub_Saharan_Africa_HHI$HHI_Value_Total)
+HHI_Min <- min(Sub_Saharan_Africa_HHI$HHI_Catch_Total,
+               Sub_Saharan_Africa_HHI$HHI_Value_Total)
+
+
+EffectA=1.5
+
+p_22 <- ggplot(Sub_Saharan_Africa_HHI) +
+  aes(x = HHI_Catch_Total,y = HHI_Value_Total,color = Year) +
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_HHI",y = "Value_HHI",size="Total_Catch(million ton)") +　
+  scale_x_continuous(limits = c(HHI_Min,HHI_Max)) +　　　　　　　　　　　
+  scale_y_continuous(limits = c(HHI_Min,HHI_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+
+print(p_22)
+
+
+```
+
+
+### Simpson
+```{r}
+source("World_Function_Rapha.R")
+
+Sub_Saharan_Africa_Simpson_Cou <- fun_Simpson4(Sub_Saharan_Africa,TotalCatch_Tonnes,Total_Value)
+
+Sub_Saharan_Africa_Simpson_Ave <- fun_Simpson5(Sub_Saharan_Africa,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Sub_Saharan_Africa_Simpson_Ave <- Sub_Saharan_Africa_Simpson_Ave[-2]
+Sub_Saharan_Africa_Simpson_Ave <- Sub_Saharan_Africa_Simpson_Ave[c(1,6,2,3,4,5)]
+
+Sub_Saharan_Africa_Simpson_Total <- fun_Simpson6(Sub_Saharan_Africa,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Sub_Saharan_Africa_Simpson_Total <- Sub_Saharan_Africa_Simpson_Total[c(1,6,2,3,4,5)]
+
+
+Sub_Saharan_Africa_Simpson_Weighted <- fun_Simpson7(Sub_Saharan_Africa,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Sub_Saharan_Africa_Simpson_Weighted <- Sub_Saharan_Africa_Simpson_Weighted[-2]
+Sub_Saharan_Africa_Simpson_Weighted <- Sub_Saharan_Africa_Simpson_Weighted[c(1,6,2,3,4,5)]
+
+
+#結合する
+Sub_Saharan_Africa_Simpson <- rbind(Sub_Saharan_Africa_Simpson_Cou,Sub_Saharan_Africa_Simpson_Ave,
+                                    Sub_Saharan_Africa_Simpson_Total,Sub_Saharan_Africa_Simpson_Weighted)
+
+Sub_Saharan_Africa_Simpson$Country.or.Area <- as.factor(Sub_Saharan_Africa_Simpson$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Sub_Saharan_Africa_Simpson <- arrange(mutate(Sub_Saharan_Africa_Simpson,
+             Country.or.Area = factor(Country.or.Area,levels = neworder6)),Country.or.Area)
+
+Simpson_Max <- max(Sub_Saharan_Africa_Simpson$Simpson_Catch_Total,
+                   Sub_Saharan_Africa_Simpson$Simpson_Value_Total)
+
+Simpson_Min <- min(Sub_Saharan_Africa_Simpson$Simpson_Catch_Total,
+                   Sub_Saharan_Africa_Simpson$Simpson_Value_Total)
+
+
+EffectA=1.5
+
+p_23 <- ggplot(Sub_Saharan_Africa_Simpson) +
+  aes(x = Simpson_Catch_Total,y = Simpson_Value_Total,color = Year)+
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_λ",y = "Value_λ",size="Total_Catch(million ton)") +   
+ scale_x_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  scale_y_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(10/EffectA,30/EffectA))
+
+print(p_23)
+
+
+
+```
+
+
+
+### Shannon
+```{r}
+source("World_Function_Rapha.R")
+
+Sub_Saharan_Africa_Shannon_Cou <- fun_Shannon4(Sub_Saharan_Africa,TotalCatch_Tonnes,Total_Value)
+
+Sub_Saharan_Africa_Shannon_Ave <- fun_Shannon5(Sub_Saharan_Africa,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Sub_Saharan_Africa_Shannon_Ave <- Sub_Saharan_Africa_Shannon_Ave[-2]
+Sub_Saharan_Africa_Shannon_Ave <- Sub_Saharan_Africa_Shannon_Ave[c(1,6,2,3,4,5)]
+
+Sub_Saharan_Africa_Shannon_Total <- fun_Shannon6(Sub_Saharan_Africa,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Sub_Saharan_Africa_Shannon_Total <- Sub_Saharan_Africa_Shannon_Total[c(1,6,2,3,4,5)]
+
+
+Sub_Saharan_Africa_Shannon_Weighted <- fun_Shannon7(Sub_Saharan_Africa,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Sub_Saharan_Africa_Shannon_Weighted <- Sub_Saharan_Africa_Shannon_Weighted[-2]
+Sub_Saharan_Africa_Shannon_Weighted <- Sub_Saharan_Africa_Shannon_Weighted[c(1,6,2,3,4,5)]
+
+
+#結合する
+Sub_Saharan_Africa_Shannon <- rbind(Sub_Saharan_Africa_Shannon_Cou,Sub_Saharan_Africa_Shannon_Ave,
+                                    Sub_Saharan_Africa_Shannon_Total)
+
+Sub_Saharan_Africa_Shannon$Country.or.Area <- as.factor(Sub_Saharan_Africa_Shannon$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Sub_Saharan_Africa_Shannon <- arrange(mutate(Sub_Saharan_Africa_Shannon,
+             Country.or.Area = factor(Country.or.Area,levels = neworder6)),Country.or.Area)
+
+Shannon_Max <- max(Sub_Saharan_Africa_Shannon$Shannon_Catch_Total,
+                   Sub_Saharan_Africa_Shannon$Shannon_Value_Total)
+
+Shanon_Min <- min(Sub_Saharan_Africa_Shannon$Shannon_Catch_Total,
+                   Sub_Saharan_Africa_Shannon$Shannon_Value_Total)
+
+
+EffectA=1.5
+
+p_24 <- ggplot(Sub_Saharan_Africa_Shannon) +
+  aes(x = Shannon_Catch_Total,y = Shannon_Value_Total,color = Year)+
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_H'",y = "Value_H'",size="Total_Catch(million ton)") +   
+ scale_x_continuous(limits = c(Shanon_Min,Shannon_Max)) +
+  scale_y_continuous(limits = c(Shanon_Min,Shannon_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(10/EffectA,30/EffectA))
+
+print(p_24)
+
+
+
+```
+
+
+
+
+## 	Northern America
+```{r}
+
+Northern_America <- World_Data %>% 
+  filter(Sub.region.Name_koh == "Northern America")
+
+
+
+```
+
+
+
+
+### HHI
+```{r}
+source("World_Function_Rapha.R")
+
+Northern_America_HHI_Cou <- fun_HHI5(Northern_America,TotalCatch_Tonnes,Total_Value)
+
+Northern_America_HHI_Ave <- fun_HHI6(Northern_America,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Northern_America_HHI_Ave <- Northern_America_HHI_Ave[-2]
+Northern_America_HHI_Ave <- Northern_America_HHI_Ave[c(1,6,2,3,4,5)]
+
+Northern_America_HHI_Total <- fun_HHI7(Northern_America,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Northern_America_HHI_Total <- Northern_America_HHI_Total[c(1,6,2,3,4,5)]
+
+Northern_America_HHI_Weighted <- fun_HHI8(Northern_America,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Northern_America_HHI_Weighted <- Northern_America_HHI_Weighted[-2]
+Northern_America_HHI_Weighted <- Northern_America_HHI_Weighted[c(1,6,2,3,4,5)]
+
+#結合する
+Northern_America_HHI <- rbind(Northern_America_HHI_Cou,Northern_America_HHI_Ave,
+                              Northern_America_HHI_Total,Northern_America_HHI_Weighted)
+
+#国名はfactorなのでlevelを与え、国名の順番を制御する
+neworder7 = c("Total","Average","Weighted_Ave","Bermuda","Benin","Canada","Greenland",
+              "Saint Pierre and Miquelon","United States of America" )
+
+Northern_America_HHI$Country.or.Area <- as.factor(Northern_America_HHI$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Northern_America_HHI <- arrange(mutate(Northern_America_HHI,
+             Country.or.Area = factor(Country.or.Area,levels = neworder7)),Country.or.Area)
+
+HHI_Max <- max(Northern_America_HHI$HHI_Catch_Total,
+               Northern_America_HHI$HHI_Value_Total)
+HHI_Min <- min(Northern_America_HHI$HHI_Catch_Total,
+               Northern_America_HHI$HHI_Value_Total)
+
+
+EffectA=1.5
+
+p_25 <- ggplot(Northern_America_HHI) +
+  aes(x = HHI_Catch_Total,y = HHI_Value_Total,color = Year) +
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_HHI",y = "Value_HHI",size="Total_Catch(milion ton)") +　
+  scale_x_continuous(limits = c(HHI_Min,HHI_Max)) +　　　　　　　　　　　
+  scale_y_continuous(limits = c(HHI_Min,HHI_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+
+print(p_25)
+
+
+```
+
+
+### Simpson
+```{r}
+source("World_Function_Rapha.R")
+
+Northern_America_Simpson_Cou <- fun_Simpson4(Northern_America,TotalCatch_Tonnes,Total_Value)
+
+Northern_America_Simpson_Ave <- fun_Simpson5(Northern_America,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Northern_America_Simpson_Ave <- Northern_America_Simpson_Ave[-2]
+Northern_America_Simpson_Ave <- Northern_America_Simpson_Ave[c(1,6,2,3,4,5)]
+
+Northern_America_Simpson_Total <- fun_Simpson6(Northern_America,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Northern_America_Simpson_Total <- Northern_America_Simpson_Total[c(1,6,2,3,4,5)]
+
+Northern_America_Simpson_Weighted <- fun_Simpson7(Northern_America,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Northern_America_Simpson_Weighted <- Northern_America_Simpson_Weighted[-2]
+Northern_America_Simpson_Weighted <- Northern_America_Simpson_Weighted[c(1,6,2,3,4,5)]
+
+
+#結合する
+Northern_America_Simpson <- rbind(Northern_America_Simpson_Cou,Northern_America_Simpson_Ave,
+                                  Northern_America_Simpson_Total,Northern_America_Simpson_Weighted)
+
+Northern_America_Simpson$Country.or.Area <- as.factor(Northern_America_Simpson$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Northern_America_Simpson <- arrange(mutate(Northern_America_Simpson,
+             Country.or.Area = factor(Country.or.Area,levels = neworder7)),Country.or.Area)
+
+Simpson_Max <- max(Northern_America_Simpson$Simpson_Catch_Total,
+                   Northern_America_Simpson$Simpson_Value_Total)
+
+Simpson_Min <- min(Northern_America_Simpson$Simpson_Catch_Total,
+                   Northern_America_Simpson$Simpson_Value_Total)
+
+
+EffectA=1.5
+
+p_26 <- ggplot(Northern_America_Simpson) +
+  aes(x = Simpson_Catch_Total,y = Simpson_Value_Total,color = Year)+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_λ",y = "Value_λ",size="Total_Catch(million ton)") +   
+ scale_x_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  scale_y_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(p_26)
+
+
+
+```
+
+
+
+### Shannon
+```{r}
+source("World_Function_Rapha.R")
+
+Northern_America_Shannon_Cou <- fun_Shannon4(Northern_America,TotalCatch_Tonnes,Total_Value)
+
+Northern_America_Shannon_Ave <- fun_Shannon5(Northern_America,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Northern_America_Shannon_Ave <- Northern_America_Shannon_Ave[-2]
+Northern_America_Shannon_Ave <- Northern_America_Shannon_Ave[c(1,6,2,3,4,5)]
+
+Northern_America_Shannon_Total <- fun_Shannon6(Northern_America,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Northern_America_Shannon_Total <- Northern_America_Shannon_Total[c(1,6,2,3,4,5)]
+
+Northern_America_Shannon_Weighted_mean <- fun_Shannon7(Northern_America,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Northern_America_Shannon_Weighted_mean <- Northern_America_Shannon_Weighted_mean[-2]
+Northern_America_Shannon_Weighted_mean <- Northern_America_Shannon_Weighted_mean[c(1,6,2,3,4,5)]
+
+#結合する
+Northern_America_Shannon <- rbind(Northern_America_Shannon_Cou,Northern_America_Shannon_Ave,
+                                  Northern_America_Shannon_Total,Northern_America_Shannon_Weighted_mean)
+
+Northern_America_Shannon$Country.or.Area <- as.factor(Northern_America_Shannon$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Northern_America_Shannon <- arrange(mutate(Northern_America_Shannon,
+             Country.or.Area = factor(Country.or.Area,levels = neworder7)),Country.or.Area)
+
+Shannon_Max <- max(Northern_America_Shannon$Shannon_Catch_Total,
+                   Northern_America_Shannon$Shannon_Value_Total)
+
+Shanon_Min <- min(Northern_America_Shannon$Shannon_Catch_Total,
+                   Northern_America_Shannon$Shannon_Value_Total)
+
+
+EffectA=1.5
+
+p_27 <- ggplot(Northern_America_Shannon) +
+  aes(x = Shannon_Catch_Total,y = Shannon_Value_Total,color = Year)+
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_H'",y = "Value_H'",size="Total_Catch(million ton)") +   
+ scale_x_continuous(limits = c(Shanon_Min,Shannon_Max)) +
+  scale_y_continuous(limits = c(Shanon_Min,Shannon_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(p_27)
+
+
+
+```
+
+
+
+## 		Latin America and the Caribbean
+```{r}
+
+	Latin_America_and_the_Caribbean <- World_Data %>% 
+  filter(Sub.region.Name_koh == "Latin America and the Caribbean")
+```
+
+
+### HHI
+```{r}
+source("World_Function_Rapha.R")
+
+Latin_America_and_the_Caribbean_HHI_Cou <- fun_HHI5(Latin_America_and_the_Caribbean,TotalCatch_Tonnes,Total_Value)
+
+Latin_America_and_the_Caribbean_HHI_Ave <- fun_HHI6(Latin_America_and_the_Caribbean,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Latin_America_and_the_Caribbean_HHI_Ave <- Latin_America_and_the_Caribbean_HHI_Ave[-2]
+Latin_America_and_the_Caribbean_HHI_Ave <- Latin_America_and_the_Caribbean_HHI_Ave[c(1,6,2,3,4,5)]
+
+Latin_America_and_the_Caribbean_HHI_Total <- fun_HHI7(Latin_America_and_the_Caribbean,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Latin_America_and_the_Caribbean_HHI_Total <- Latin_America_and_the_Caribbean_HHI_Total[c(1,6,2,3,4,5)]
+
+Latin_America_and_the_Caribbean_HHI_Weighted <- fun_HHI8(Latin_America_and_the_Caribbean,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Latin_America_and_the_Caribbean_HHI_Weighted <- Latin_America_and_the_Caribbean_HHI_Weighted[-2]
+Latin_America_and_the_Caribbean_HHI_Weighted <- Latin_America_and_the_Caribbean_HHI_Weighted[c(1,6,2,3,4,5)]
+
+#結合する
+Latin_America_and_the_Caribbean_HHI <- rbind(Latin_America_and_the_Caribbean_HHI_Cou,
+                                             Latin_America_and_the_Caribbean_HHI_Ave,
+                                             Latin_America_and_the_Caribbean_HHI_Total,
+                                             Latin_America_and_the_Caribbean_HHI_Weighted)
+
+#国名はfactorなのでlevelを与え、国名の順番を制御する
+neworder8 = c("Total","Average","Weighted_Ave","Anguilla","Antigua and Barbuda",
+              "Argentina","Aruba","Bahamas","Barbados","Belize","Brazil","Chile",
+              "Colombia","Costa Rica","Cuba","Dominica","Dominican Republic","Ecuador","El Salvador",
+              "French Guiana","Grenada","Guadeloupe","Guatemala","Guyana","Haiti","Honduras","Jamaica",
+              "Martinique","Mexico","Montserrat","Nicaragua","Panama","Peru","Puerto Rico","Saint Kitts and Nevis",
+              "Saint Lucia","Saint Vincent and the Grenadines","Sint Maarten (Dutch part)","Suriname",
+              "Trinidad and Tobago","Turks and Caicos Islands","Uruguay","Venezuela (Bolivarian Republic of)")
+
+Latin_America_and_the_Caribbean_HHI$Country.or.Area <- as.factor(Latin_America_and_the_Caribbean_HHI$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Latin_America_and_the_Caribbean_HHI <- arrange(mutate(Latin_America_and_the_Caribbean_HHI,
+             Country.or.Area = factor(Country.or.Area,levels = neworder8)),Country.or.Area)
+
+HHI_Max <- max(Latin_America_and_the_Caribbean_HHI$HHI_Catch_Total,
+               Latin_America_and_the_Caribbean_HHI$HHI_Value_Total)
+HHI_Min <- min(Latin_America_and_the_Caribbean_HHI$HHI_Catch_Total,
+               Latin_America_and_the_Caribbean_HHI$HHI_Value_Total)
+
+
+EffectA=1.5
+
+p_28 <- ggplot(Latin_America_and_the_Caribbean_HHI) +
+  aes(x = HHI_Catch_Total,y = HHI_Value_Total,color = Year) +
+ theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_HHI",y = "Value_HHI",size="Total_Catch(million ton)") +　
+  scale_x_continuous(limits = c(HHI_Min,HHI_Max)) +　　　　　　　　　　　
+  scale_y_continuous(limits = c(HHI_Min,HHI_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(10/EffectA,30/EffectA))
+
+
+print(p_28)
+
+
+```
+
+
+### Simpson
+```{r}
+source("World_Function_Rapha.R")
+
+Latin_America_and_the_Caribbean_Simpson_Cou <- fun_Simpson4(Latin_America_and_the_Caribbean,TotalCatch_Tonnes,Total_Value)
+
+Latin_America_and_the_Caribbean_Simpson_Ave <- fun_Simpson5(Latin_America_and_the_Caribbean,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Latin_America_and_the_Caribbean_Simpson_Ave <- Latin_America_and_the_Caribbean_Simpson_Ave[-2]
+Latin_America_and_the_Caribbean_Simpson_Ave <- Latin_America_and_the_Caribbean_Simpson_Ave[c(1,6,2,3,4,5)]
+
+Latin_America_and_the_Caribbean_Simpson_Total <- fun_Simpson6(Latin_America_and_the_Caribbean,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Latin_America_and_the_Caribbean_Simpson_Total <- Latin_America_and_the_Caribbean_Simpson_Total[c(1,6,2,3,4,5)]
+
+Latin_America_and_the_Caribbean_Simpson_Weighted <- fun_Simpson7(Latin_America_and_the_Caribbean,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Latin_America_and_the_Caribbean_Simpson_Weighted <- Latin_America_and_the_Caribbean_Simpson_Weighted[-2]
+Latin_America_and_the_Caribbean_Simpson_Weighted <- Latin_America_and_the_Caribbean_Simpson_Weighted[c(1,6,2,3,4,5)]
+
+#結合する
+Latin_America_and_the_Caribbean_Simpson <- rbind(Latin_America_and_the_Caribbean_Simpson_Cou,
+                                                 Latin_America_and_the_Caribbean_Simpson_Ave,
+                                                 Latin_America_and_the_Caribbean_Simpson_Total,
+                                                 Latin_America_and_the_Caribbean_Simpson_Weighted)
+
+Latin_America_and_the_Caribbean_Simpson$Country.or.Area <- as.factor(Latin_America_and_the_Caribbean_Simpson$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Latin_America_and_the_Caribbean_Simpson <- arrange(mutate(Latin_America_and_the_Caribbean_Simpson,
+             Country.or.Area = factor(Country.or.Area,levels = neworder8)),Country.or.Area)
+
+Simpson_Max <- max(Latin_America_and_the_Caribbean_Simpson$Simpson_Catch_Total,
+                   Latin_America_and_the_Caribbean_Simpson$Simpson_Value_Total)
+
+Simpson_Min <- min(Latin_America_and_the_Caribbean_Simpson$Simpson_Catch_Total,
+                   Latin_America_and_the_Caribbean_Simpson$Simpson_Value_Total)
+
+
+EffectA=1.5
+
+p_29 <- ggplot(Latin_America_and_the_Caribbean_Simpson) +
+  aes(x = Simpson_Catch_Total,y = Simpson_Value_Total,color = Year)+
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_λ",y = "Value_λ",size="Total_Catch(million ton)") +   
+ scale_x_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  scale_y_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(10/EffectA,30/EffectA))
+
+print(p_29)
+
+
+
+```
+
+
+
+### Shannon
+```{r}
+source("World_Function_Rapha.R")
+
+Latin_America_and_the_Caribbean_Shannon_Cou <- fun_Shannon4(Latin_America_and_the_Caribbean,TotalCatch_Tonnes,Total_Value)
+
+Latin_America_and_the_Caribbean_Shannon_Ave <- fun_Shannon5(Latin_America_and_the_Caribbean,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Latin_America_and_the_Caribbean_Shannon_Ave <- Latin_America_and_the_Caribbean_Shannon_Ave[-2]
+Latin_America_and_the_Caribbean_Shannon_Ave <- Latin_America_and_the_Caribbean_Shannon_Ave[c(1,6,2,3,4,5)]
+
+Latin_America_and_the_Caribbean_Shannon_Total <- fun_Shannon6(Latin_America_and_the_Caribbean,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Latin_America_and_the_Caribbean_Shannon_Total <- Latin_America_and_the_Caribbean_Shannon_Total[c(1,6,2,3,4,5)]
+
+Latin_America_and_the_Caribbean_Shannon_Weighted <- fun_Shannon7(Latin_America_and_the_Caribbean,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Latin_America_and_the_Caribbean_Shannon_Weighted <- Latin_America_and_the_Caribbean_Shannon_Weighted[-2]
+Latin_America_and_the_Caribbean_Shannon_Weighted <- Latin_America_and_the_Caribbean_Shannon_Weighted[c(1,6,2,3,4,5)]
+
+
+#結合する
+Latin_America_and_the_Caribbean_Shannon <- rbind(Latin_America_and_the_Caribbean_Shannon_Cou,
+                                                 Latin_America_and_the_Caribbean_Shannon_Ave,
+                                                 Latin_America_and_the_Caribbean_Shannon_Total,
+                                                 Latin_America_and_the_Caribbean_Shannon_Weighted)
+
+Latin_America_and_the_Caribbean_Shannon$Country.or.Area <- as.factor(Latin_America_and_the_Caribbean_Shannon$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Latin_America_and_the_Caribbean_Shannon <- arrange(mutate(Latin_America_and_the_Caribbean_Shannon,
+             Country.or.Area = factor(Country.or.Area,levels = neworder8)),Country.or.Area)
+
+Shannon_Max <- max(Latin_America_and_the_Caribbean_Shannon$Shannon_Catch_Total,
+                   Latin_America_and_the_Caribbean_Shannon$Shannon_Value_Total)
+
+Shanon_Min <- min(Latin_America_and_the_Caribbean_Shannon$Shannon_Catch_Total,
+                   Latin_America_and_the_Caribbean_Shannon$Shannon_Value_Total)
+
+
+EffectA=1.5
+
+p_30 <- ggplot(Latin_America_and_the_Caribbean_Shannon) +
+  aes(x = Shannon_Catch_Total,y = Shannon_Value_Total,color = Year)+
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_H'",y = "Value_H'",size="Total_Catch(million ton)") +   
+ scale_x_continuous(limits = c(Shanon_Min,Shannon_Max)) +
+  scale_y_continuous(limits = c(Shanon_Min,Shannon_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(10/EffectA,30/EffectA))
+
+print(p_30)
+
+
+
+```
+
+
+
+## 		Micronesia
+```{r}
+
+	Micronesia <- World_Data %>% 
+  filter(Sub.region.Name_koh == "Micronesia")
+
+
+
+```
+
+
+### HHI
+```{r}
+source("World_Function_Rapha.R")
+
+Micronesia_HHI_Cou <- fun_HHI5(Micronesia,TotalCatch_Tonnes,Total_Value)
+
+Micronesia_HHI_Ave <- fun_HHI6(Micronesia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Micronesia_HHI_Ave <- Micronesia_HHI_Ave[-2]
+Micronesia_HHI_Ave <- Micronesia_HHI_Ave[c(1,6,2,3,4,5)]
+
+Micronesia_HHI_Total <- fun_HHI7(Micronesia,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Micronesia_HHI_Total <- Micronesia_HHI_Total[c(1,6,2,3,4,5)]
+
+Micronesia_HHI_Weighted <- fun_HHI8(Micronesia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Micronesia_HHI_Weighted <- Micronesia_HHI_Weighted[-2]
+Micronesia_HHI_Weighted <- Micronesia_HHI_Weighted[c(1,6,2,3,4,5)]
+
+
+#結合する
+Micronesia_HHI <- rbind(Micronesia_HHI_Cou,Micronesia_HHI_Ave,
+                        Micronesia_HHI_Total,Micronesia_HHI_Weighted)
+
+#国名はfactorなのでlevelを与え、国名の順番を制御する
+neworder9 = c("Total","Average","Weighted_Ave","Guam","Kiribati","Micronesia (Federated States of)",
+              "Nauru","Northern Mariana Islands","Palau")
+
+Micronesia_HHI$Country.or.Area <- as.factor(Micronesia_HHI$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Micronesia_HHI <- arrange(mutate(Micronesia_HHI,
+             Country.or.Area = factor(Country.or.Area,levels = neworder9)),Country.or.Area)
+
+HHI_Max <- max(Micronesia_HHI$HHI_Catch_Total,
+               Micronesia_HHI$HHI_Value_Total)
+HHI_Min <- min(Micronesia_HHI$HHI_Catch_Total,
+               Micronesia_HHI$HHI_Value_Total)
+
+
+EffectA=1.5
+
+p_31 <- ggplot(Micronesia_HHI) +
+  aes(x = HHI_Catch_Total,y = HHI_Value_Total,color = Year) +
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_HHI",y = "Value_HHI",size="Total_Catch(million ton)") +　
+  scale_x_continuous(limits = c(HHI_Min,HHI_Max)) +　　　　　　　　　　　
+  scale_y_continuous(limits = c(HHI_Min,HHI_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+
+print(p_31)
+
+
+```
+
+
+### Simpson
+```{r}
+source("World_Function_Rapha.R")
+
+Micronesia_Simpson_Cou <- fun_Simpson4(Micronesia,TotalCatch_Tonnes,Total_Value)
+
+Micronesia_Simpson_Ave <- fun_Simpson5(Micronesia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Micronesia_Simpson_Ave <- Micronesia_Simpson_Ave[-2]
+Micronesia_Simpson_Ave <- Micronesia_Simpson_Ave[c(1,6,2,3,4,5)]
+
+Micronesia_Simpson_Total <- fun_Simpson6(Micronesia,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Micronesia_Simpson_Total <- Micronesia_Simpson_Total[c(1,6,2,3,4,5)]
+
+Micronesia_Simpson_Weighted <- fun_Simpson7(Micronesia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Micronesia_Simpson_Weighted <- Micronesia_Simpson_Weighted[-2]
+Micronesia_Simpson_Weighted <- Micronesia_Simpson_Weighted[c(1,6,2,3,4,5)]
+
+#結合する
+Micronesia_Simpson <- rbind(Micronesia_Simpson_Cou,Micronesia_Simpson_Ave,
+                            Micronesia_Simpson_Total,Micronesia_Simpson_Weighted)
+
+Micronesia_Simpson$Country.or.Area <- as.factor(Micronesia_Simpson$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Micronesia_Simpson <- arrange(mutate(Micronesia_Simpson,
+             Country.or.Area = factor(Country.or.Area,levels = neworder9)),Country.or.Area)
+
+Simpson_Max <- max(Micronesia_Simpson$Simpson_Catch_Total,
+                   Micronesia_Simpson$Simpson_Value_Total)
+
+Simpson_Min <- min(Micronesia_Simpson$Simpson_Catch_Total,
+                   Micronesia_Simpson$Simpson_Value_Total)
+
+
+EffectA=1.5
+
+p_32 <- ggplot(Micronesia_Simpson) +
+  aes(x = Simpson_Catch_Total,y = Simpson_Value_Total,color = Year)+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_λ",y = "Value_λ",size="Total_Catch(million ton)") +   
+ scale_x_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  scale_y_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(p_32)
+
+
+
+```
+
+
+
+### Shannon
+```{r}
+source("World_Function_Rapha.R")
+
+Micronesia_Shannon_Cou <- fun_Shannon4(Micronesia,TotalCatch_Tonnes,Total_Value)
+
+Micronesia_Shannon_Ave <- fun_Shannon5(Micronesia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Micronesia_Shannon_Ave <- Micronesia_Shannon_Ave[-2]
+Micronesia_Shannon_Ave <- Micronesia_Shannon_Ave[c(1,6,2,3,4,5)]
+
+Micronesia_Shannon_Total <- fun_Shannon6(Micronesia,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Micronesia_Shannon_Total <- Micronesia_Shannon_Total[c(1,6,2,3,4,5)]
+
+Micronesia_Shannon_Weighted <- fun_Shannon7(Micronesia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Micronesia_Shannon_Weighted <- Micronesia_Shannon_Weighted[-2]
+Micronesia_Shannon_Weighted <- Micronesia_Shannon_Weighted[c(1,6,2,3,4,5)]
+
+#結合する
+Micronesia_Shannon <- rbind(Micronesia_Shannon_Cou,Micronesia_Shannon_Ave,
+                            Micronesia_Shannon_Total,Micronesia_Shannon_Weighted)
+
+Micronesia_Shannon$Country.or.Area <- as.factor(Micronesia_Shannon$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Micronesia_Shannon <- arrange(mutate(Micronesia_Shannon,
+             Country.or.Area = factor(Country.or.Area,levels = neworder9)),Country.or.Area)
+
+Shannon_Max <- max(Micronesia_Shannon$Shannon_Catch_Total,
+                   Micronesia_Shannon$Shannon_Value_Total)
+
+Shanon_Min <- min(Micronesia_Shannon$Shannon_Catch_Total,
+                   Micronesia_Shannon$Shannon_Value_Total)
+
+
+EffectA=1.5
+
+p_33 <- ggplot(Micronesia_Shannon) +
+  aes(x = Shannon_Catch_Total,y = Shannon_Value_Total,color = Year)+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_H'",y = "Value_H'",size="Total_Catch(million ton)") +   
+ scale_x_continuous(limits = c(Shanon_Min,Shannon_Max)) +
+  scale_y_continuous(limits = c(Shanon_Min,Shannon_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(p_33)
+
+
+
+```
+
+
+
+
+## 		Melanesia
+```{r}
+
+	Melanesia <- World_Data %>% 
+  filter(Sub.region.Name_koh == "Melanesia")
+
+
+
+```
+
+
+### HHI
+```{r}
+source("World_Function_Rapha.R")
+
+Melanesia_HHI_Cou <- fun_HHI5(Melanesia,TotalCatch_Tonnes,Total_Value)
+
+Melanesia_HHI_Ave <- fun_HHI6(Melanesia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Melanesia_HHI_Ave <- Melanesia_HHI_Ave[-2]
+Melanesia_HHI_Ave <- Melanesia_HHI_Ave[c(1,6,2,3,4,5)]
+
+Melanesia_HHI_Total <- fun_HHI7(Melanesia,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Melanesia_HHI_Total <- Melanesia_HHI_Total[c(1,6,2,3,4,5)]
+
+Melanesia_HHI_Weighted <- fun_HHI8(Melanesia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Melanesia_HHI_Weighted <- Melanesia_HHI_Weighted[-2]
+Melanesia_HHI_Weighted <- Melanesia_HHI_Weighted[c(1,6,2,3,4,5)]
+
+
+#結合する
+Melanesia_HHI <- rbind(Melanesia_HHI_Cou,Melanesia_HHI_Ave,
+                       Melanesia_HHI_Total,Melanesia_HHI_Weighted)
+
+#国名はfactorなのでlevelを与え、国名の順番を制御する
+neworder10 = c("Total","Average","Weighted_Ave","Fiji","New Caledonia","Papua New Guinea",
+              "Solomon Islands","Vanuatu")
+
+Melanesia_HHI$Country.or.Area <- as.factor(Melanesia_HHI$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Melanesia_HHI <- arrange(mutate(Melanesia_HHI,
+             Country.or.Area = factor(Country.or.Area,levels = neworder10)),Country.or.Area)
+
+HHI_Max <- max(Melanesia_HHI$HHI_Catch_Total,
+               Melanesia_HHI$HHI_Value_Total)
+HHI_Min <- min(Melanesia_HHI$HHI_Catch_Total,
+               Melanesia_HHI$HHI_Value_Total)
+
+
+EffectA=1.5
+
+p_34 <- ggplot(Melanesia_HHI) +
+  aes(x = HHI_Catch_Total,y = HHI_Value_Total,color = Year) +
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_HHI",y = "Value_HHI",size="Total_Catch(million ton)") +　
+  scale_x_continuous(limits = c(HHI_Min,HHI_Max)) +　　　　　　　　　　　
+  scale_y_continuous(limits = c(HHI_Min,HHI_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+
+print(p_34)
+
+
+```
+
+
+### Simpson
+```{r}
+source("World_Function_Rapha.R")
+
+Melanesia_Simpson_Cou <- fun_Simpson4(Melanesia,TotalCatch_Tonnes,Total_Value)
+
+Melanesia_Simpson_Ave <- fun_Simpson5(Melanesia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Melanesia_Simpson_Ave <- Melanesia_Simpson_Ave[-2]
+Melanesia_Simpson_Ave <- Melanesia_Simpson_Ave[c(1,6,2,3,4,5)]
+
+Melanesia_Simpson_Total <- fun_Simpson6(Melanesia,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Melanesia_HHI_Total <- Melanesia_HHI_Total[c(1,6,2,3,4,5)]
+
+Melanesia_Simpson_Weighted <- fun_Simpson7(Melanesia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Melanesia_Simpson_Weighted <- Melanesia_Simpson_Weighted[-2]
+Melanesia_Simpson_Weighted <- Melanesia_Simpson_Weighted[c(1,6,2,3,4,5)]
+
+#結合する
+Melanesia_Simpson <- rbind(Melanesia_Simpson_Cou,Melanesia_Simpson_Ave,
+                           Melanesia_Simpson_Total,Melanesia_Simpson_Weighted)
+
+Melanesia_Simpson$Country.or.Area <- as.factor(Melanesia_Simpson$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Melanesia_Simpson <- arrange(mutate(Melanesia_Simpson,
+             Country.or.Area = factor(Country.or.Area,levels = neworder10)),Country.or.Area)
+
+Simpson_Max <- max(Melanesia_Simpson$Simpson_Catch_Total,
+                   Melanesia_Simpson$Simpson_Value_Total)
+
+Simpson_Min <- min(Melanesia_Simpson$Simpson_Catch_Total,
+                   Melanesia_Simpson$Simpson_Value_Total)
+
+
+EffectA=1.5
+
+p_35 <- ggplot(Melanesia_Simpson) +
+  aes(x = Simpson_Catch_Total,y = Simpson_Value_Total,color = Year)+
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_λ",y = "Value_λ",size="Total_Catch(million ton)") +   
+ scale_x_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  scale_y_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(p_35)
+
+
+
+```
+
+
+
+### Shannon
+```{r}
+source("World_Function_Rapha.R")
+
+Melanesia_Shannon_Cou <- fun_Shannon4(Melanesia,TotalCatch_Tonnes,Total_Value)
+
+Melanesia_Shannon_Ave <- fun_Shannon5(Melanesia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Melanesia_Shannon_Ave <- Melanesia_Shannon_Ave[-2]
+Melanesia_Shannon_Ave <- Melanesia_Shannon_Ave[c(1,6,2,3,4,5)]
+
+Melanesia_Shannon_Total <- fun_Shannon6(Melanesia,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Melanesia_Shannon_Total <- Melanesia_Shannon_Total[c(1,6,2,3,4,5)]
+
+Melanesia_Shannon_Weighted <- fun_Shannon7(Melanesia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Melanesia_Shannon_Weighted <- Melanesia_Shannon_Weighted[-2]
+Melanesia_Shannon_Weighted <- Melanesia_Shannon_Weighted[c(1,6,2,3,4,5)]
+
+#結合する
+Melanesia_Shannon <- rbind(Melanesia_Shannon_Cou,Melanesia_Shannon_Ave,
+                           Melanesia_Shannon_Total,Melanesia_Shannon_Weighted)
+
+Melanesia_Shannon$Country.or.Area <- as.factor(Melanesia_Shannon$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Melanesia_Shannon <- arrange(mutate(Melanesia_Shannon,
+             Country.or.Area = factor(Country.or.Area,levels = neworder10)),Country.or.Area)
+
+
+Shannon_Max <- max(Melanesia_Shannon$Shannon_Catch_Total,
+                   Melanesia_Shannon$Shannon_Value_Total)
+
+Shanon_Min <- min(Melanesia_Shannon$Shannon_Catch_Total,
+                   Melanesia_Shannon$Shannon_Value_Total)
+
+
+EffectA=1.5
+
+p_36 <- ggplot(Melanesia_Shannon) +
+  aes(x = Shannon_Catch_Total,y = Shannon_Value_Total,color = Year)+
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_H'",y = "Value_H'",size="Total_Catch(million ton)") +   
+ scale_x_continuous(limits = c(Shanon_Min,Shannon_Max)) +
+  scale_y_continuous(limits = c(Shanon_Min,Shannon_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(p_36)
+
+
+
+```
+
+
+
+## 		Polynesia
+```{r}
+
+	Polynesia <- World_Data %>% 
+  filter(Sub.region.Name_koh == "Polynesia")
+
+
+
+```
+
+
+### HHI
+```{r}
+source("World_Function_Rapha.R")
+
+Polynesia_HHI_Cou <- fun_HHI5(Polynesia,TotalCatch_Tonnes,Total_Value)
+
+Polynesia_HHI_Ave <- fun_HHI6(Polynesia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Polynesia_HHI_Ave <- Polynesia_HHI_Ave[-2]
+Polynesia_HHI_Ave <- Polynesia_HHI_Ave[c(1,6,2,3,4,5)]
+
+Polynesia_HHI_Total <- fun_HHI7(Polynesia,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Polynesia_HHI_Total <- Polynesia_HHI_Total[c(1,6,2,3,4,5)]
+
+Polynesia_HHI_Weighted <- fun_HHI8(Polynesia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Polynesia_HHI_Weighted <- Polynesia_HHI_Weighted[-2]
+Polynesia_HHI_Weighted <- Polynesia_HHI_Weighted[c(1,6,2,3,4,5)]
+
+
+#結合する
+Polynesia_HHI <- rbind(Polynesia_HHI_Cou,Polynesia_HHI_Ave,
+                       Polynesia_HHI_Total,Polynesia_HHI_Weighted)
+
+#国名はfactorなのでlevelを与え、国名の順番を制御する
+neworder11 = c("Total","Average","Weighted_Ave","American Samoa","Cook Islands","French Polynesia",
+               "Niue","Pitcairn","Samoa","Tokelau","Tonga","Tuvalu","Wallis and Futuna Islands")
+
+Polynesia_HHI$Country.or.Area <- as.factor(Polynesia_HHI$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Polynesia_HHI <- arrange(mutate(Polynesia_HHI,
+             Country.or.Area = factor(Country.or.Area,levels = neworder11)),Country.or.Area)
+
+
+HHI_Max <- max(Polynesia_HHI$HHI_Catch_Total,
+               Polynesia_HHI$HHI_Value_Total)
+HHI_Min <- min(Polynesia_HHI$HHI_Catch_Total,
+               Polynesia_HHI$HHI_Value_Total)
+
+
+EffectA=1.5
+
+p_37 <- ggplot(Polynesia_HHI) +
+  aes(x = HHI_Catch_Total,y = HHI_Value_Total,color = Year) +
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_HHI",y = "Value_HHI",size="Total_Catch(million ton)") +　
+  scale_x_continuous(limits = c(HHI_Min,HHI_Max)) +　　　　　　　　　　　
+  scale_y_continuous(limits = c(HHI_Min,HHI_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+
+print(p_37)
+
+
+```
+
+
+### Simpson
+```{r}
+source("World_Function_Rapha.R")
+
+Polynesia_Simpson_Cou <- fun_Simpson4(Polynesia,TotalCatch_Tonnes,Total_Value)
+
+Polynesia_Simpson_Ave <- fun_Simpson5(Polynesia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Polynesia_Simpson_Ave <- Polynesia_Simpson_Ave[-2]
+Polynesia_Simpson_Ave <- Polynesia_Simpson_Ave[c(1,6,2,3,4,5)]
+
+Polynesia_Simpson_Total <- fun_Simpson6(Polynesia,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Polynesia_Simpson_Total <- Polynesia_Simpson_Total[c(1,6,2,3,4,5)]
+
+Polynesia_Simpson_Weighted <- fun_Simpson7(Polynesia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Polynesia_Simpson_Weighted <- Polynesia_Simpson_Weighted[-2]
+Polynesia_Simpson_Weighted <- Polynesia_Simpson_Weighted[c(1,6,2,3,4,5)]
+
+
+#結合する
+Polynesia_Simpson <- rbind(Polynesia_Simpson_Cou,Polynesia_Simpson_Ave,
+                           Polynesia_Simpson_Total,Polynesia_Simpson_Weighted)
+
+Polynesia_Simpson$Country.or.Area <- as.factor(Polynesia_Simpson$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Polynesia_Simpson <- arrange(mutate(Polynesia_Simpson,
+             Country.or.Area = factor(Country.or.Area,levels = neworder11)),Country.or.Area)
+
+Simpson_Max <- max(Polynesia_Simpson$Simpson_Catch_Total,
+                   Polynesia_Simpson$Simpson_Value_Total)
+
+Simpson_Min <- min(Polynesia_Simpson$Simpson_Catch_Total,
+                   Polynesia_Simpson$Simpson_Value_Total)
+
+
+EffectA=1.5
+
+p_38 <- ggplot(Polynesia_Simpson) +
+  aes(x = Simpson_Catch_Total,y = Simpson_Value_Total,color = Year)+
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_λ",y = "Value_λ",size="Total_Catch(million ton)") +   
+ scale_x_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  scale_y_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(p_38)
+
+
+
+```
+
+
+
+### Shannon
+```{r}
+source("World_Function_Rapha.R")
+
+Polynesia_Shannon_Cou <- fun_Shannon4(Polynesia,TotalCatch_Tonnes,Total_Value)
+
+Polynesia_Shannon_Ave <- fun_Shannon5(Polynesia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Polynesia_Shannon_Ave <- Polynesia_Shannon_Ave[-2]
+Polynesia_Shannon_Ave <- Polynesia_Shannon_Ave[c(1,6,2,3,4,5)]
+
+Polynesia_Shannon_Total <- fun_Shannon6(Polynesia,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Polynesia_Shannon_Total <- Polynesia_Shannon_Total[c(1,6,2,3,4,5)]
+
+Polynesia_Shannon_Weighted <- fun_Shannon7(Polynesia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Polynesia_Shannon_Weighted <- Polynesia_Shannon_Weighted[-2]
+Polynesia_Shannon_Weighted <- Polynesia_Shannon_Weighted[c(1,6,2,3,4,5)]
+
+
+#結合する
+Polynesia_Shannon <- rbind(Polynesia_Shannon_Cou,Polynesia_Shannon_Ave,
+                           Polynesia_Shannon_Total,Polynesia_Shannon_Weighted)
+
+Polynesia_Shannon$Country.or.Area <- as.factor(Polynesia_Shannon$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Polynesia_Shannon <- arrange(mutate(Polynesia_Shannon,
+             Country.or.Area = factor(Country.or.Area,levels = neworder11)),Country.or.Area)
+
+Shannon_Max <- max(Polynesia_Shannon$Shannon_Catch_Total,
+                   Polynesia_Shannon$Shannon_Value_Total)
+
+Shanon_Min <- min(Polynesia_Shannon$Shannon_Catch_Total,
+                   Polynesia_Shannon$Shannon_Value_Total)
+
+
+EffectA=1.5
+
+p_39 <- ggplot(Polynesia_Shannon) +
+  aes(x = Shannon_Catch_Total,y = Shannon_Value_Total,color = Year)+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_H'",y = "Value_H'",size="Total_Catch(million ton)") +   
+ scale_x_continuous(limits = c(Shanon_Min,Shannon_Max)) +
+  scale_y_continuous(limits = c(Shanon_Min,Shannon_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(p_39)
+
+
+
+```
+
+
+
+## 		Australia and New Zealand
+```{r}
+
+	Australia_and_New_Zealand <- World_Data %>% 
+  filter(Sub.region.Name_koh == "Australia and New Zealand")
+
+
+
+```
+
+
+### HHI
+```{r}
+source("World_Function_Rapha.R")
+
+Australia_and_New_Zealand_HHI_Cou <- fun_HHI5(Australia_and_New_Zealand,TotalCatch_Tonnes,Total_Value)
+
+Australia_and_New_Zealand_HHI_Ave <- fun_HHI6(Australia_and_New_Zealand,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Australia_and_New_Zealand_HHI_Ave <- Australia_and_New_Zealand_HHI_Ave[-2]
+Australia_and_New_Zealand_HHI_Ave <- Australia_and_New_Zealand_HHI_Ave[c(1,6,2,3,4,5)]
+
+Australia_and_New_Zealand_HHI_Total <- fun_HHI7(Australia_and_New_Zealand,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Australia_and_New_Zealand_HHI_Total <- Australia_and_New_Zealand_HHI_Total[c(1,6,2,3,4,5)]
+
+Australia_and_New_Zealand_HHI_Weighted <- fun_HHI8(Australia_and_New_Zealand,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Australia_and_New_Zealand_HHI_Weighted <- Australia_and_New_Zealand_HHI_Weighted[-2]
+Australia_and_New_Zealand_HHI_Weighted <- Australia_and_New_Zealand_HHI_Weighted[c(1,6,2,3,4,5)]
+
+#結合する
+Australia_and_New_Zealand_HHI <- rbind(Australia_and_New_Zealand_HHI_Cou,Australia_and_New_Zealand_HHI_Ave,
+                                       Australia_and_New_Zealand_HHI_Total,Australia_and_New_Zealand_HHI_Weighted)
+
+#国名はfactorなのでlevelを与え、国名の順番を制御する
+neworder12 = c("Total","Average","Weighted_Ave","Australia","New Zealand")
+
+Australia_and_New_Zealand_HHI$Country.or.Area <- as.factor(Australia_and_New_Zealand_HHI$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Australia_and_New_Zealand_HHI <- arrange(mutate(Australia_and_New_Zealand_HHI,
+             Country.or.Area = factor(Country.or.Area,levels = neworder12)),Country.or.Area)
+
+HHI_Max <- max(Australia_and_New_Zealand_HHI$HHI_Catch_Total,
+               Australia_and_New_Zealand_HHI$HHI_Value_Total)
+HHI_Min <- min(Australia_and_New_Zealand_HHI$HHI_Catch_Total,
+               Australia_and_New_Zealand_HHI$HHI_Value_Total)
+
+
+EffectA=1.5
+
+p_40 <- ggplot(Australia_and_New_Zealand_HHI) +
+  aes(x = HHI_Catch_Total,y = HHI_Value_Total,color = Year) +
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_HHI",y = "Value_HHI",size="Total_Catch(million ton)") +　
+  scale_x_continuous(limits = c(HHI_Min,HHI_Max)) +　　　　　　　　　　　
+  scale_y_continuous(limits = c(HHI_Min,HHI_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+
+print(p_40)
+
+
+```
+
+
+### Simpson
+```{r}
+source("World_Function_Rapha.R")
+
+Australia_and_New_Zealand_Simpson_Cou <- fun_Simpson4(Australia_and_New_Zealand,TotalCatch_Tonnes,Total_Value)
+
+Australia_and_New_Zealand_Simpson_Ave <- fun_Simpson5(Australia_and_New_Zealand,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Australia_and_New_Zealand_Simpson_Ave <- Australia_and_New_Zealand_Simpson_Ave[-2]
+Australia_and_New_Zealand_Simpson_Ave <- Australia_and_New_Zealand_Simpson_Ave[c(1,6,2,3,4,5)]
+
+Australia_and_New_Zealand_Simpson_Total <- fun_Simpson6(Australia_and_New_Zealand,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Australia_and_New_Zealand_Simpson_Total <- Australia_and_New_Zealand_Simpson_Total[c(1,6,2,3,4,5)]
+
+Australia_and_New_Zealand_Simpson_Weighted <- fun_Simpson7(Australia_and_New_Zealand,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Australia_and_New_Zealand_Simpson_Weighted <- Australia_and_New_Zealand_Simpson_Weighted[-2]
+Australia_and_New_Zealand_Simpson_Weighted <- Australia_and_New_Zealand_Simpson_Weighted[c(1,6,2,3,4,5)]
+
+#結合する
+Australia_and_New_Zealand_Simpson <- rbind(Australia_and_New_Zealand_Simpson_Cou,Australia_and_New_Zealand_Simpson_Ave,
+                                           Australia_and_New_Zealand_Simpson_Total,Australia_and_New_Zealand_Simpson_Weighted)
+
+Australia_and_New_Zealand_Simpson$Country.or.Area <- as.factor(Australia_and_New_Zealand_Simpson$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Australia_and_New_Zealand_Simpson <- arrange(mutate(Australia_and_New_Zealand_Simpson,
+             Country.or.Area = factor(Country.or.Area,levels = neworder12)),Country.or.Area)
+
+Simpson_Max <- max(Australia_and_New_Zealand_Simpson$Simpson_Catch_Total,
+                   Australia_and_New_Zealand_Simpson$Simpson_Value_Total)
+
+Simpson_Min <- min(Australia_and_New_Zealand_Simpson$Simpson_Catch_Total,
+                   Australia_and_New_Zealand_Simpson$Simpson_Value_Total)
+
+
+EffectA=1.5
+
+p_41 <- ggplot(Australia_and_New_Zealand_Simpson) +
+  aes(x = Simpson_Catch_Total,y = Simpson_Value_Total,color = Year)+
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_λ",y = "Value_λ",size="Total_Catch(million ton)") +   
+ scale_x_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  scale_y_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(p_41)
+
+
+
+```
+
+
+
+### Shannon
+```{r}
+source("World_Function_Rapha.R")
+
+Australia_and_New_Zealand_Shannon_Cou <- fun_Shannon4(Australia_and_New_Zealand,TotalCatch_Tonnes,Total_Value)
+
+Australia_and_New_Zealand_Shannon_Ave <- fun_Shannon5(Australia_and_New_Zealand,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Australia_and_New_Zealand_Shannon_Ave <- Australia_and_New_Zealand_Shannon_Ave[-2]
+Australia_and_New_Zealand_Shannon_Ave <- Australia_and_New_Zealand_Shannon_Ave[c(1,6,2,3,4,5)]
+
+Australia_and_New_Zealand_Shannon_Total <- fun_Shannon6(Australia_and_New_Zealand,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Australia_and_New_Zealand_Shannon_Total <- Australia_and_New_Zealand_Shannon_Total[c(1,6,2,3,4,5)]
+
+Australia_and_New_Zealand_Shannon_Weighted <- fun_Shannon7(Australia_and_New_Zealand,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Australia_and_New_Zealand_Shannon_Weighted <- Australia_and_New_Zealand_Shannon_Weighted[-2]
+Australia_and_New_Zealand_Shannon_Weighted <- Australia_and_New_Zealand_Shannon_Weighted[c(1,6,2,3,4,5)]
+
+
+#結合する
+Australia_and_New_Zealand_Shannon <- rbind(Australia_and_New_Zealand_Shannon_Cou,Australia_and_New_Zealand_Shannon_Ave,
+                                           Australia_and_New_Zealand_Shannon_Total,Australia_and_New_Zealand_Shannon_Weighted)
+
+Australia_and_New_Zealand_Shannon$Country.or.Area <- as.factor(Australia_and_New_Zealand_Shannon$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Australia_and_New_Zealand_Shannon <- arrange(mutate(Australia_and_New_Zealand_Shannon,
+             Country.or.Area = factor(Country.or.Area,levels = neworder12)),Country.or.Area)
+
+Shannon_Max <- max(Australia_and_New_Zealand_Shannon$Shannon_Catch_Total,
+                   Australia_and_New_Zealand_Shannon$Shannon_Value_Total)
+
+Shanon_Min <- min(Australia_and_New_Zealand_Shannon$Shannon_Catch_Total,
+                   Australia_and_New_Zealand_Shannon$Shannon_Value_Total)
+
+
+EffectA=1.5
+
+p_42 <- ggplot(Australia_and_New_Zealand_Shannon) +
+  aes(x = Shannon_Catch_Total,y = Shannon_Value_Total,color = Year)+
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_H'",y = "Value_H'",size="Total_Catch(million ton)") +   
+ scale_x_continuous(limits = c(Shanon_Min,Shannon_Max)) +
+  scale_y_continuous(limits = c(Shanon_Min,Shannon_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(p_42)
+
+
+
+```
+
+
+
+
+## 	Western Asia
+```{r}
+
+	Western_Asia <- World_Data %>% 
+  filter(Sub.region.Name_koh == "Western Asia")
+
+
+
+```
+
+
+### HHI
+```{r}
+source("World_Function_Rapha.R")
+
+Western_Asia_HHI_Cou <- fun_HHI5(Western_Asia,TotalCatch_Tonnes,Total_Value)
+
+Western_Asia_HHI_Ave <- fun_HHI6(Western_Asia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Western_Asia_HHI_Ave <- Western_Asia_HHI_Ave[-2]
+Western_Asia_HHI_Ave <- Western_Asia_HHI_Ave[c(1,6,2,3,4,5)]
+
+Western_Asia_HHI_Total <- fun_HHI7(Western_Asia,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Western_Asia_HHI_Total <- Western_Asia_HHI_Total[c(1,6,2,3,4,5)]
+
+Western_Asia_HHI_Weighhted <- fun_HHI8(Western_Asia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Western_Asia_HHI_Weighhted <- Western_Asia_HHI_Weighhted[-2]
+Western_Asia_HHI_Weighhted <- Western_Asia_HHI_Weighhted[c(1,6,2,3,4,5)]
+
+
+#結合する
+Western_Asia_HHI <- rbind(Western_Asia_HHI_Cou,Western_Asia_HHI_Ave,
+                          Western_Asia_HHI_Total,Western_Asia_HHI_Weighhted)
+
+#国名はfactorなのでlevelを与え、国名の順番を制御する
+neworder13 = c("Total","Average","Weighted_Ave","Bahrain","Gaza Strip","Georgia","Iraq","Israel","Jordan","Kuwait","Lebanon",
+               "North Cyprus","Oman","Qatar","Saudi Arabia","South Cyprus","Syrian Arab Republic",
+               "Turkey","United Arab Emirates","Yemen")
+
+Western_Asia_HHI$Country.or.Area <- as.factor(Western_Asia_HHI$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Western_Asia_HHI <- arrange(mutate(Western_Asia_HHI,
+             Country.or.Area = factor(Country.or.Area,levels = neworder13)),Country.or.Area)
+
+HHI_Max <- max(Western_Asia_HHI$HHI_Catch_Total,
+               Western_Asia_HHI$HHI_Value_Total)
+HHI_Min <- min(Western_Asia_HHI$HHI_Catch_Total,
+               Western_Asia_HHI$HHI_Value_Total)
+
+
+EffectA=1.5
+
+p_43 <- ggplot(Western_Asia_HHI) +
+  aes(x = HHI_Catch_Total,y = HHI_Value_Total,color = Year) +
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_HHI",y = "Value_HHI",size="Total_Catch(million ton)") +　
+  scale_x_continuous(limits = c(HHI_Min,HHI_Max)) +　　　　　　　　　　　
+  scale_y_continuous(limits = c(HHI_Min,HHI_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(10/EffectA,30/EffectA))
+
+
+print(p_43)
+
+
+```
+
+
+### Simpson
+```{r}
+source("World_Function_Rapha.R")
+
+Western_Asia_Simpson_Cou <- fun_Simpson4(Western_Asia,TotalCatch_Tonnes,Total_Value)
+
+Western_Asia_Simpson_Ave <- fun_Simpson5(Western_Asia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Western_Asia_Simpson_Ave <- Western_Asia_Simpson_Ave[-2]
+Western_Asia_Simpson_Ave <- Western_Asia_Simpson_Ave[c(1,6,2,3,4,5)]
+
+Western_Asia_Simpson_Total <- fun_Simpson6(Western_Asia,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Western_Asia_Simpson_Total <- Western_Asia_Simpson_Total[c(1,6,2,3,4,5)]
+
+Western_Asia_Simpson_Weighted <- fun_Simpson7(Western_Asia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Western_Asia_Simpson_Weighted <- Western_Asia_Simpson_Weighted[-2]
+Western_Asia_Simpson_Weighted <- Western_Asia_Simpson_Weighted[c(1,6,2,3,4,5)]
+
+
+#結合する
+Western_Asia_Simpson <- rbind(Western_Asia_Simpson_Cou,Western_Asia_Simpson_Ave,
+                              Western_Asia_Simpson_Total,Western_Asia_Simpson_Weighted)
+
+Western_Asia_Simpson$Country.or.Area <- as.factor(Western_Asia_Simpson$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Western_Asia_Simpson <- arrange(mutate(Western_Asia_Simpson,
+             Country.or.Area = factor(Country.or.Area,levels = neworder13)),Country.or.Area)
+
+Simpson_Max <- max(Western_Asia_Simpson$Simpson_Catch_Total,
+                   Western_Asia_Simpson$Simpson_Value_Total)
+
+Simpson_Min <- min(Western_Asia_Simpson$Simpson_Catch_Total,
+                   Western_Asia_Simpson$Simpson_Value_Total)
+
+
+EffectA=1.5
+
+p_44 <- ggplot(Western_Asia_Simpson) +
+  aes(x = Simpson_Catch_Total,y = Simpson_Value_Total,color = Year)+
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_λ",y = "Value_λ",size="Total_Catch(million ton)") +   
+ scale_x_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  scale_y_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(10/EffectA,30/EffectA))
+
+print(p_44)
+
+
+
+```
+
+
+
+### Shannon
+```{r}
+source("World_Function_Rapha.R")
+
+Western_Asia_Shannon_Cou <- fun_Shannon4(Western_Asia,TotalCatch_Tonnes,Total_Value)
+
+Western_Asia_Shannon_Ave <- fun_Shannon5(Western_Asia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Western_Asia_Shannon_Ave <- Western_Asia_Shannon_Ave[-2]
+Western_Asia_Shannon_Ave <- Western_Asia_Shannon_Ave[c(1,6,2,3,4,5)]
+
+Western_Asia_Shannon_Total <- fun_Shannon6(Western_Asia,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Western_Asia_Shannon_Total <- Western_Asia_Shannon_Total[c(1,6,2,3,4,5)]
+
+Western_Asia_Shannon_Weighted <- fun_Shannon7(Western_Asia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Western_Asia_Shannon_Weighted <- Western_Asia_Shannon_Weighted[-2]
+Western_Asia_Shannon_Weighted <- Western_Asia_Shannon_Weighted[c(1,6,2,3,4,5)]
+
+#結合する
+Western_Asia_Shannon <- rbind(Western_Asia_Shannon_Cou,Western_Asia_Shannon_Ave,
+                              Western_Asia_Shannon_Total,Western_Asia_Shannon_Weighted)
+
+Western_Asia_Shannon$Country.or.Area <- as.factor(Western_Asia_Shannon$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Western_Asia_Shannon <- arrange(mutate(Western_Asia_Shannon,
+             Country.or.Area = factor(Country.or.Area,levels = neworder13)),Country.or.Area)
+
+Shannon_Max <- max(Western_Asia_Shannon$Shannon_Catch_Total,
+                   Western_Asia_Shannon$Shannon_Value_Total)
+
+Shanon_Min <- min(Western_Asia_Shannon$Shannon_Catch_Total,
+                   Western_Asia_Shannon$Shannon_Value_Total)
+
+
+EffectA=1.5
+
+p_45 <- ggplot(Western_Asia_Shannon) +
+  aes(x = Shannon_Catch_Total,y = Shannon_Value_Total,color = Year)+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_H'",y = "Value_H'",size="Total_Catch(million ton)") +   
+ scale_x_continuous(limits = c(Shanon_Min,Shannon_Max)) +
+  scale_y_continuous(limits = c(Shanon_Min,Shannon_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(p_45)
+
+
+
+```
+
+
+
+
+## 	Southern Asia
+```{r}
+
+	Southern_Asia <- World_Data %>% 
+  filter(Sub.region.Name_koh == "Southern Asia")
+
+
+
+```
+
+
+### HHI
+```{r}
+source("World_Function_Rapha.R")
+
+Southern_Asia_HHI_Cou <- fun_HHI5(Southern_Asia,TotalCatch_Tonnes,Total_Value)
+
+Southern_Asia_HHI_Ave <- fun_HHI6(Southern_Asia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Southern_Asia_HHI_Ave <- Southern_Asia_HHI_Ave[-2]
+Southern_Asia_HHI_Ave <- Southern_Asia_HHI_Ave[c(1,6,2,3,4,5)]
+
+Southern_Asia_HHI_Total <- fun_HHI7(Southern_Asia,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Southern_Asia_HHI_Total <- Southern_Asia_HHI_Total[c(1,6,2,3,4,5)]
+
+Southern_Asia_HHI_Weighted <- fun_HHI8(Southern_Asia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Southern_Asia_HHI_Weighted <- Southern_Asia_HHI_Weighted[-2]
+Southern_Asia_HHI_Weighted <- Southern_Asia_HHI_Weighted[c(1,6,2,3,4,5)]
+
+
+#結合する
+Southern_Asia_HHI <- rbind(Southern_Asia_HHI_Cou,Western_Asia_HHI_Ave,
+                           Southern_Asia_HHI_Total,Southern_Asia_HHI_Weighted)
+
+#国名はfactorなのでlevelを与え、国名の順番を制御する
+neworder14 = c("Total","Average","Weighted_Ave","Bangladesh","India",
+               "Iran (Islamic Republic of)","Maldives","Pakistan","Sri Lanka")
+
+Southern_Asia_HHI$Country.or.Area <- as.factor(Southern_Asia_HHI$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Southern_Asia_HHI <- arrange(mutate(Southern_Asia_HHI,
+             Country.or.Area = factor(Country.or.Area,levels = neworder14)),Country.or.Area)
+
+HHI_Max <- max(Southern_Asia_HHI$HHI_Catch_Total,
+               Southern_Asia_HHI$HHI_Value_Total)
+HHI_Min <- min(Southern_Asia_HHI$HHI_Catch_Total,
+               Southern_Asia_HHI$HHI_Value_Total)
+
+
+EffectA=1.5
+
+p_46 <- ggplot(Southern_Asia_HHI) +
+  aes(x = HHI_Catch_Total,y = HHI_Value_Total,color = Year) +
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_HHI",y = "Value_HHI",size="Total_Catch(million ton)") +　
+  scale_x_continuous(limits = c(HHI_Min,HHI_Max)) +　　　　　　　　　　　
+  scale_y_continuous(limits = c(HHI_Min,HHI_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+
+print(p_46)
+
+
+```
+
+
+### Simpson
+```{r}
+source("World_Function_Rapha.R")
+
+Southern_Asia_Simpson_Cou <- fun_Simpson4(Southern_Asia,TotalCatch_Tonnes,Total_Value)
+
+Southern_Asia_Simpson_Ave <- fun_Simpson5(Southern_Asia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Southern_Asia_Simpson_Ave <- Southern_Asia_Simpson_Ave[-2]
+Southern_Asia_Simpson_Ave <- Southern_Asia_Simpson_Ave[c(1,6,2,3,4,5)]
+
+Southern_Asia_Simpson_Total <- fun_Simpson6(Southern_Asia,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Southern_Asia_Simpson_Total <- Southern_Asia_Simpson_Total[c(1,6,2,3,4,5)]
+
+Southern_Asia_Simpson_Weighted <- fun_Simpson7(Southern_Asia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Southern_Asia_Simpson_Weighted <- Southern_Asia_Simpson_Weighted[-2]
+Southern_Asia_Simpson_Weighted <- Southern_Asia_Simpson_Weighted[c(1,6,2,3,4,5)]
+
+#結合する
+Southern_Asia_Simpson <- rbind(Southern_Asia_Simpson_Cou,Southern_Asia_Simpson_Ave,
+                               Southern_Asia_Simpson_Total,Southern_Asia_Simpson_Weighted)
+
+Southern_Asia_Simpson$Country.or.Area <- as.factor(Southern_Asia_Simpson$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Southern_Asia_Simpson <- arrange(mutate(Southern_Asia_Simpson,
+             Country.or.Area = factor(Country.or.Area,levels = neworder14)),Country.or.Area)
+
+Simpson_Max <- max(Southern_Asia_Simpson$Simpson_Catch_Total,
+                   Southern_Asia_Simpson$Simpson_Value_Total)
+
+Simpson_Min <- min(Southern_Asia_Simpson$Simpson_Catch_Total,
+                   Southern_Asia_Simpson$Simpson_Value_Total)
+
+
+EffectA=1.5
+
+p_47 <- ggplot(Southern_Asia_Simpson) +
+  aes(x = Simpson_Catch_Total,y = Simpson_Value_Total,color = Year)+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_λ",y = "Value_λ",size="Total_Catch(million ton)") +   
+ scale_x_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  scale_y_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(p_47)
+
+
+
+```
+
+
+
+### Shannon
+```{r}
+source("World_Function_Rapha.R")
+
+Southern_Asia_Shannon_Cou <- fun_Shannon4(Southern_Asia,TotalCatch_Tonnes,Total_Value)
+
+Southern_Asia_Shannon_Ave <- fun_Shannon5(Southern_Asia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Southern_Asia_Shannon_Ave <- Southern_Asia_Shannon_Ave[-2]
+Southern_Asia_Shannon_Ave <- Southern_Asia_Shannon_Ave[c(1,6,2,3,4,5)]
+
+outhern_Asia_Shannon_Total <- fun_Shannon6(Southern_Asia,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+outhern_Asia_Shannon_Total <- outhern_Asia_Shannon_Total[c(1,6,2,3,4,5)]
+
+Southern_Asia_Shannon_Weighted <- fun_Shannon7(Southern_Asia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Southern_Asia_Shannon_Weighted <- Southern_Asia_Shannon_Weighted[-2]
+Southern_Asia_Shannon_Weighted <- Southern_Asia_Shannon_Weighted[c(1,6,2,3,4,5)]
+
+
+#結合する
+Southern_Asia_Shannon <- rbind(Southern_Asia_Shannon_Cou,Southern_Asia_Shannon_Ave,
+                               outhern_Asia_Shannon_Total,Southern_Asia_Shannon_Weighted)
+
+Southern_Asia_Shannon$Country.or.Area <- as.factor(Southern_Asia_Shannon$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Southern_Asia_Shannon <- arrange(mutate(Southern_Asia_Shannon,
+             Country.or.Area = factor(Country.or.Area,levels = neworder14)),Country.or.Area)
+
+
+Shannon_Max <- max(Southern_Asia_Shannon$Shannon_Catch_Total,
+                   Southern_Asia_Shannon$Shannon_Value_Total)
+
+Shanon_Min <- min(Southern_Asia_Shannon$Shannon_Catch_Total,
+                   Southern_Asia_Shannon$Shannon_Value_Total)
+
+
+EffectA=1.5
+
+p_48 <- ggplot(Southern_Asia_Shannon) +
+  aes(x = Shannon_Catch_Total,y = Shannon_Value_Total,color = Year)+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_H'",y = "Value_H'",size="Total_Catch(million ton)") +   
+ scale_x_continuous(limits = c(Shanon_Min,Shannon_Max)) +
+  scale_y_continuous(limits = c(Shanon_Min,Shannon_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(p_48)
+
+
+
+```
+
+
+
+## 	South-eastern Asia
+```{r}
+
+	South_eastern_Asia <- World_Data %>% 
+  filter(Sub.region.Name_koh == "South-eastern Asia")
+
+
+
+```
+
+
+### HHI
+```{r}
+source("World_Function_Rapha.R")
+
+South_eastern_Asia_HHI_Cou <- fun_HHI5(South_eastern_Asia,TotalCatch_Tonnes,Total_Value)
+
+South_eastern_Asia_HHI_Ave <- fun_HHI6(South_eastern_Asia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+South_eastern_Asia_HHI_Ave <- South_eastern_Asia_HHI_Ave[-2]
+South_eastern_Asia_HHI_Ave <- South_eastern_Asia_HHI_Ave[c(1,6,2,3,4,5)]
+
+South_eastern_Asia_HHI_Total <- fun_HHI7(South_eastern_Asia,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+South_eastern_Asia_HHI_Total <- South_eastern_Asia_HHI_Total[c(1,6,2,3,4,5)]
+
+South_eastern_Asia_HHI_Weighted <- fun_HHI8(South_eastern_Asia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+South_eastern_Asia_HHI_Weighted <- South_eastern_Asia_HHI_Weighted[-2]
+South_eastern_Asia_HHI_Weighted <- South_eastern_Asia_HHI_Weighted[c(1,6,2,3,4,5)]
+
+#結合する
+South_eastern_Asia_HHI <- rbind(South_eastern_Asia_HHI_Cou,South_eastern_Asia_HHI_Ave,
+                                South_eastern_Asia_HHI_Total,South_eastern_Asia_HHI_Weighted)
+
+#国名はfactorなのでlevelを与え、国名の順番を制御する
+neworder15 = c("Total","Average","Weighted_Ave","Brunei Darussalam","Cambodia","Indonesia","Malaysia","Myanmar","Philippines",
+               "Singapore","Thailand","Timor-Leste","Viet Nam")
+
+South_eastern_Asia_HHI$Country.or.Area <- as.factor(South_eastern_Asia_HHI$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+South_eastern_Asia_HHI <- arrange(mutate(South_eastern_Asia_HHI,
+             Country.or.Area = factor(Country.or.Area,levels = neworder15)),Country.or.Area)
+
+HHI_Max <- max(South_eastern_Asia_HHI$HHI_Catch_Total,
+               South_eastern_Asia_HHI$HHI_Value_Total)
+HHI_Min <- min(South_eastern_Asia_HHI$HHI_Catch_Total,
+               South_eastern_Asia_HHI$HHI_Value_Total)
+
+
+EffectA=1.5
+
+p_49 <- ggplot(South_eastern_Asia_HHI) +
+  aes(x = HHI_Catch_Total,y = HHI_Value_Total,color = Year) +
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_HHI",y = "Value_HHI",size="Total_Catch(million ton)") +　
+  scale_x_continuous(limits = c(HHI_Min,HHI_Max)) +　　　　　　　　　　　
+  scale_y_continuous(limits = c(HHI_Min,HHI_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+
+print(p_49)
+
+
+```
+
+
+### Simpson
+```{r}
+source("World_Function_Rapha.R")
+
+South_eastern_Asia_Simpson_Cou <- fun_Simpson4(South_eastern_Asia,TotalCatch_Tonnes,Total_Value)
+
+South_eastern_Asia_Simpson_Ave <- fun_Simpson5(South_eastern_Asia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+South_eastern_Asia_Simpson_Ave <- South_eastern_Asia_Simpson_Ave[-2]
+South_eastern_Asia_Simpson_Ave <- South_eastern_Asia_Simpson_Ave[c(1,6,2,3,4,5)]
+
+South_eastern_Asia_Simpson_Total <- fun_Simpson6(South_eastern_Asia,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+South_eastern_Asia_Simpson_Total <- South_eastern_Asia_Simpson_Total[c(1,6,2,3,4,5)]
+
+South_eastern_Asia_Simpson_Weighted <- fun_Simpson7(South_eastern_Asia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+South_eastern_Asia_Simpson_Weighted <- South_eastern_Asia_Simpson_Weighted[-2]
+South_eastern_Asia_Simpson_Weighted <- South_eastern_Asia_Simpson_Weighted[c(1,6,2,3,4,5)]
+
+
+#結合する
+South_eastern_Asia_Simpson <- rbind(South_eastern_Asia_Simpson_Cou,South_eastern_Asia_Simpson_Ave,
+                                    South_eastern_Asia_Simpson_Total,South_eastern_Asia_Simpson_Weighted)
+
+South_eastern_Asia_Simpson$Country.or.Area <- as.factor(South_eastern_Asia_Simpson$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+South_eastern_Asia_Simpson <- arrange(mutate(South_eastern_Asia_Simpson,
+             Country.or.Area = factor(Country.or.Area,levels = neworder15)),Country.or.Area)
+
+Simpson_Max <- max(South_eastern_Asia_Simpson$Simpson_Catch_Total,
+                   South_eastern_Asia_Simpson$Simpson_Value_Total)
+
+Simpson_Min <- min(South_eastern_Asia_Simpson$Simpson_Catch_Total,
+                   South_eastern_Asia_Simpson$Simpson_Value_Total)
+
+
+EffectA=1.5
+
+p_50 <- ggplot(South_eastern_Asia_Simpson) +
+  aes(x = Simpson_Catch_Total,y = Simpson_Value_Total,color = Year)+
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_λ",y = "Value_λ",size="Total_Catch(million ton)") +   
+ scale_x_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  scale_y_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(p_50)
+
+
+
+```
+
+
+
+### Shannon
+```{r}
+source("World_Function_Rapha.R")
+
+South_eastern_Asia_Shannon_Cou <- fun_Shannon4(South_eastern_Asia,TotalCatch_Tonnes,Total_Value)
+
+South_eastern_Asia_Shannon_Ave <- fun_Shannon5(South_eastern_Asia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+South_eastern_Asia_Shannon_Ave <- South_eastern_Asia_Shannon_Ave[-2]
+South_eastern_Asia_Shannon_Ave <- South_eastern_Asia_Shannon_Ave[c(1,6,2,3,4,5)]
+
+South_eastern_Asia_Shannon_Total <- fun_Shannon6(South_eastern_Asia,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+South_eastern_Asia_Shannon_Total <- South_eastern_Asia_Shannon_Total[c(1,6,2,3,4,5)]
+
+South_eastern_Asia_Shannon_Weighted <- fun_Shannon7(South_eastern_Asia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+South_eastern_Asia_Shannon_Weighted <- South_eastern_Asia_Shannon_Weighted[-2]
+South_eastern_Asia_Shannon_Weighted <- South_eastern_Asia_Shannon_Weighted[c(1,6,2,3,4,5)]
+
+#結合する
+South_eastern_Asia_Shannon <- rbind(South_eastern_Asia_Shannon_Cou,South_eastern_Asia_Shannon_Ave,
+                                    South_eastern_Asia_Shannon_Total,South_eastern_Asia_Shannon_Weighted)
+
+South_eastern_Asia_Shannon$Country.or.Area <- as.factor(South_eastern_Asia_Shannon$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+South_eastern_Asia_Shannon <- arrange(mutate(South_eastern_Asia_Shannon,
+             Country.or.Area = factor(Country.or.Area,levels = neworder15)),Country.or.Area)
+
+Shannon_Max <- max(South_eastern_Asia_Shannon$Shannon_Catch_Total,
+                   South_eastern_Asia_Shannon$Shannon_Value_Total)
+
+Shanon_Min <- min(South_eastern_Asia_Shannon$Shannon_Catch_Total,
+                   South_eastern_Asia_Shannon$Shannon_Value_Total)
+
+
+EffectA=1.5
+
+p_51 <- ggplot(South_eastern_Asia_Shannon) +
+  aes(x = Shannon_Catch_Total,y = Shannon_Value_Total,color = Year)+
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_H'",y = "Value_H'",size="Total_Catch(million ton)") +   
+ scale_x_continuous(limits = c(Shanon_Min,Shannon_Max)) +
+  scale_y_continuous(limits = c(Shanon_Min,Shannon_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(p_51)
+
+
+
+```
+
+
+
+## 	Eastern Asia
+```{r}
+
+	Eastern_Asia <- World_Data %>% 
+  filter(Sub.region.Name_koh == "Eastern Asia")
+
+
+
+```
+
+
+### HHI
+```{r}
+source("World_Function_Rapha.R")
+
+Eastern_Asia_HHI_Cou <- fun_HHI5(Eastern_Asia,TotalCatch_Tonnes,Total_Value)
+
+Eastern_Asia_HHI_Ave <- fun_HHI6(Eastern_Asia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Eastern_Asia_HHI_Ave <- Eastern_Asia_HHI_Ave[-2]
+Eastern_Asia_HHI_Ave <- Eastern_Asia_HHI_Ave[c(1,6,2,3,4,5)]
+
+Eastern_Asia_HHI_Total <- fun_HHI7(Eastern_Asia,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Eastern_Asia_HHI_Total <- Eastern_Asia_HHI_Total[c(1,6,2,3,4,5)]
+
+Eastern_Asia_HHI_Weighted <- fun_HHI8(Eastern_Asia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Eastern_Asia_HHI_Weighted <- Eastern_Asia_HHI_Weighted[-2]
+Eastern_Asia_HHI_Weighted <- Eastern_Asia_HHI_Weighted[c(1,6,2,3,4,5)]
+
+#結合する
+Eastern_Asia_HHI <- rbind(Eastern_Asia_HHI_Cou,Eastern_Asia_HHI_Ave,
+                          Eastern_Asia_HHI_Total,Eastern_Asia_HHI_Weighted)
+
+#国名はfactorなのでlevelを与え、国名の順番を制御する
+neworder16 = c("Total","Average","Weighted_Ave","China","China, Hong Kong Special Administrative Region",
+               "Democratic People's Republic of Korea","Japan","Republic of Korea","Taiwan")
+
+Eastern_Asia_HHI$Country.or.Area <- as.factor(Eastern_Asia_HHI$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Eastern_Asia_HHI <- arrange(mutate(Eastern_Asia_HHI,
+             Country.or.Area = factor(Country.or.Area,levels = neworder16)),Country.or.Area)
+
+HHI_Max <- max(Eastern_Asia_HHI$HHI_Catch_Total,
+               Eastern_Asia_HHI$HHI_Value_Total)
+HHI_Min <- min(Eastern_Asia_HHI$HHI_Catch_Total,
+               Eastern_Asia_HHI$HHI_Value_Total)
+
+
+EffectA=1.5
+
+p_52 <- ggplot(Eastern_Asia_HHI) +
+  aes(x = HHI_Catch_Total,y = HHI_Value_Total,color = Year) +
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_HHI",y = "Value_HHI",size="Total_Catch(million ton)") +　
+  scale_x_continuous(limits = c(HHI_Min,HHI_Max)) +　　　　　　　　　　　
+  scale_y_continuous(limits = c(HHI_Min,HHI_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+
+print(p_52)
+
+
+```
+
+
+### Simpson
+```{r}
+source("World_Function_Rapha.R")
+
+Eastern_Asia_Simpson_Cou <- fun_Simpson4(Eastern_Asia,TotalCatch_Tonnes,Total_Value)
+
+Eastern_Asia_Simpson_Ave <- fun_Simpson5(Eastern_Asia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Eastern_Asia_Simpson_Ave <- Eastern_Asia_Simpson_Ave[-2]
+Eastern_Asia_Simpson_Ave <- Eastern_Asia_Simpson_Ave[c(1,6,2,3,4,5)]
+
+Eastern_Asia_Simpson_Total <- fun_Simpson6(Eastern_Asia,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Eastern_Asia_Simpson_Total <- Eastern_Asia_Simpson_Total[c(1,6,2,3,4,5)]
+
+Eastern_Asia_Simpson_Weighted <- fun_Simpson7(Eastern_Asia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Eastern_Asia_Simpson_Weighted <- Eastern_Asia_Simpson_Weighted[-2]
+Eastern_Asia_Simpson_Weighted <- Eastern_Asia_Simpson_Weighted[c(1,6,2,3,4,5)]
+
+#結合する
+Eastern_Asia_Simpson <- rbind(Eastern_Asia_Simpson_Cou,Eastern_Asia_Simpson_Ave,
+                              Eastern_Asia_Simpson_Total,Eastern_Asia_Simpson_Weighted)
+
+Eastern_Asia_Simpson$Country.or.Area <- as.factor(Eastern_Asia_Simpson$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Eastern_Asia_Simpson <- arrange(mutate(Eastern_Asia_Simpson,
+             Country.or.Area = factor(Country.or.Area,levels = neworder16)),Country.or.Area)
+
+Simpson_Max <- max(Eastern_Asia_Simpson$Simpson_Catch_Total,
+                   Eastern_Asia_Simpson$Simpson_Value_Total)
+
+Simpson_Min <- min(Eastern_Asia_Simpson$Simpson_Catch_Total,
+                   Eastern_Asia_Simpson$Simpson_Value_Total)
+
+
+EffectA=1.5
+
+p_53 <- ggplot(Eastern_Asia_Simpson) +
+  aes(x = Simpson_Catch_Total,y = Simpson_Value_Total,color = Year)+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_λ",y = "Value_λ",size="Total_Catch(million ton)") +   
+ scale_x_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  scale_y_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(p_53)
+
+
+
+```
+
+
+
+### Shannon
+```{r}
+source("World_Function_Rapha.R")
+
+Eastern_Asia_Shannon_Cou <- fun_Shannon4(Eastern_Asia,TotalCatch_Tonnes,Total_Value)
+
+Eastern_Asia_Shannon_Ave <- fun_Shannon5(Eastern_Asia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Eastern_Asia_Shannon_Ave <- Eastern_Asia_Shannon_Ave[-2]
+Eastern_Asia_Shannon_Ave <- Eastern_Asia_Shannon_Ave[c(1,6,2,3,4,5)]
+
+Eastern_Asia_Shannon_Total <- fun_Shannon6(Eastern_Asia,TotalCatch_Tonnes,Total_Value)
+#rbindするために列をそろえる、順番も変える
+Eastern_Asia_Shannon_Total <- Eastern_Asia_Shannon_Total[c(1,6,2,3,4,5)]
+
+Eastern_Asia_Shannon_Weighted <- fun_Shannon7(Eastern_Asia,TotalCatch_Tonnes,Total_Value)
+
+#rbindするために列をそろえる、順番も変える
+Eastern_Asia_Shannon_Weighted <- Eastern_Asia_Shannon_Weighted[-2]
+Eastern_Asia_Shannon_Weighted <- Eastern_Asia_Shannon_Weighted[c(1,6,2,3,4,5)]
+
+#結合する
+Eastern_Asia_Shannon <- rbind(Eastern_Asia_Shannon_Cou,Eastern_Asia_Shannon_Ave,
+                              Eastern_Asia_Shannon_Total,Eastern_Asia_Shannon_Weighted)
+
+Eastern_Asia_Shannon$Country.or.Area <- as.factor(Eastern_Asia_Shannon$Country.or.Area)
+
+
+#Country.or.Areaをlevel順にする
+Eastern_Asia_Shannon <- arrange(mutate(Eastern_Asia_Shannon,
+             Country.or.Area = factor(Country.or.Area,levels = neworder16)),Country.or.Area)
+
+Shannon_Max <- max(Eastern_Asia_Shannon$Shannon_Catch_Total,
+                   Eastern_Asia_Shannon$Shannon_Value_Total)
+
+Shanon_Min <- min(Eastern_Asia_Shannon$Shannon_Catch_Total,
+                   Eastern_Asia_Shannon$Shannon_Value_Total)
+
+
+EffectA=1.5
+
+p_54 <- ggplot(Eastern_Asia_Shannon) +
+  aes(x = Shannon_Catch_Total,y = Shannon_Value_Total,color = Year)+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Country.or.Area)　+
+  labs(x = "Catch_H'",y = "Value_H'",size="Total_Catch(million ton)") +   
+ scale_x_continuous(limits = c(Shanon_Min,Shannon_Max)) +
+  scale_y_continuous(limits = c(Shanon_Min,Shannon_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+print(p_54)
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+

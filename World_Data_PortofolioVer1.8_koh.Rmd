@@ -1,0 +1,483 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+¥123567890---
+title: "World_Data_PortofolioVer1.6"
+author: '@Kohsuke'
+date: "6/5/2020
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Sub region analysis in this Rmd
+
+- 
+
+
+# 1 準備：
+## 1-0 概要
+-オリジナルデータから.rdsファイルの作成
+-
+
+
+## Library読み込む
+```{r echo=TRUE}
+# 現在の環境にある変数の消去
+rm(list = ls(all=TRUE))
+#解析処理に関するセットアップ、パッケージの読み込みなど
+library(tidyverse)
+library(dplyr)
+library(ggsci)
+library(gdata)
+library(DT)
+library(xtable)
+library(openxlsx)
+library(ggrepel)
+library(formattable)
+library(gridExtra)
+library(stringr)
+```
+
+
+## 分析データ読み込み
+```{r}
+World_Data <- readRDS("Working_Data/World/World_Data_cleaned_6June20_koh.rds")
+Production_Ranking_Cou <- read.csv("Working_Data/World/Production_Ranking_Cou.csv")
+
+Catch_Ranking <- Production_Ranking_Cou %>% 
+  select(Country.or.Area,Catch_Ranking) %>% 
+  arrange(Catch_Ranking)
+
+Value_Ranking <- Production_Ranking_Cou %>% 
+  select(Country.or.Area,Value_Ranking) %>% 
+  arrange(Value_Ranking)
+
+  
+options(scipen=100000)　#指数表示を避けるコード
+
+```
+
+
+
+
+#漁獲量・漁獲高の変動係数
+##年ごと、地域ごと
+###Simpson_CV
+```{r}
+source("World_Function_Rapha.R")
+#RegionごとのCV
+Region_CV <- fun_CV1(World_Data,TotalCatch_Tonnes,Total_Value)
+
+
+#RegionごとのSimpsonの平均をとる
+Region_Simpson <- fun_Simpson3(World_Data,TotalCatch_Tonnes,Total_Value) %>% 
+  group_by(Region.Name_koh) %>% 
+  summarise(Catch_Simpson_Ave = mean(Simpson_Catch_Total))
+
+#Region_CVとRegion_Simpsonを結合する
+Region_Simpson_CV <- cbind(Region_CV,Region_Simpson)
+
+#Region.Name_kohが二つあるので一つ消す
+Region_Simpson_CV <- Region_Simpson_CV[-4]
+
+
+
+EffectA=1.5
+
+p_1 <- ggplot(Region_Simpson_CV) +
+  aes(x = CV_Catch,y = CV_Value,color = Region.Name_koh,label=(Region.Name_koh))+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = Catch_Simpson_Ave),alpha=.5) +
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  labs(x = "Catch_CV",y = "Value_CV",size="Catch_λ_Ave",color = "Region_Name") +   
+  scale_x_continuous(limits = c(0.3,0.7)) +
+  scale_y_continuous(limits = c(0.3,0.8)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA)) +
+  geom_text_repel(colour="salmon4")
+
+print(p_1)
+
+
+```
+
+
+##Subregion
+###Simpson_CV
+```{r}
+source("World_Function_Rapha.R")
+#Sub_RegionごとのCV
+Sub_Region_CV <- fun_CV2(World_Data,TotalCatch_Tonnes,Total_Value)
+
+
+#Sub_RegionごとのSimpsonの平均をとる
+Sub_Region_Simpson <- fun_Simpson5(World_Data,TotalCatch_Tonnes,Total_Value) %>% 
+  group_by(Sub.region.Name_koh) %>% 
+  summarise(Catch_Simpson_Ave = mean(Simpson_Catch_Total)) %>% 
+  na.omit()
+
+#Sub_Region_CVとSub_Region_Simpsonを結合する
+Sub_Region_Simpson_CV <- cbind(Sub_Region_CV,Sub_Region_Simpson)
+
+#Sub_Region.Name_kohが二つあるので一つ消す
+Sub_Region_Simpson_CV <- Sub_Region_Simpson_CV[-4]
+
+
+
+EffectA=1.5
+
+p_2 <- ggplot(Sub_Region_Simpson_CV) +
+  aes(x = CV_Catch,y = CV_Value,color = Sub.region.Name_koh,label=(Sub.region.Name_koh))+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = Catch_Simpson_Ave),alpha=.5) +
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  labs(x = "Catch_CV",y = "Value_CV",size="Catch_λ_Ave",color = "Sub_Region_Name") +   
+  scale_x_continuous(limits = c(0,1.2),breaks = seq(0,1.2,0.2)) +
+  scale_y_continuous(limits = c(0,1.2),breaks = seq(0,1.2,0.2)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA)) +
+  geom_text_repel(colour="salmon4")
+
+print(p_2)
+
+
+```
+
+
+
+
+#漁獲量・漁獲高ランキングでのCV
+##漁獲量・漁獲高のCV
+```{r}
+#漁獲量上位10カ国のデータセットを作る
+Country_Catch_10 <- World_Data %>% 
+  filter(Catch_Ranking == 1:10)
+
+#漁獲高上位10カ国のデータセットを作る
+Country_Value_10 <- World_Data %>% 
+  filter(Value_Ranking == 1:10)
+
+```
+
+
+###漁獲量上位10カ国
+```{r}
+source("World_Function_Rapha.R")
+#漁獲量上位10カ国のCV
+Country_Catch_10_CV <- fun_CV3(Country_Catch_10,TotalCatch_Tonnes,Total_Value)
+
+
+#CountryごとのSimpsonの平均をとる
+Country_10_Simpson1 <- fun_Simpson4(Country_Catch_10,TotalCatch_Tonnes,Total_Value) %>% 
+  group_by(Country.or.Area) %>% 
+  summarise(Catch_Simpson_Ave = mean(Simpson_Catch_Total)) %>% 
+  na.omit()
+
+#Country_Catch_10_CVとCountry_10_Simpsonを結合する
+Country_Catch_10_Simpson_CV <- cbind(Country_Catch_10_CV,Country_10_Simpson1)
+
+#Sub_Region.Name_kohが二つあるので一つ消す
+Country_Catch_10_Simpson_CV <- Country_Catch_10_Simpson_CV[-4]
+
+
+
+EffectA=1.5
+
+p_3 <- ggplot(Country_Catch_10_Simpson_CV) +
+  aes(x = CV_Catch,y = CV_Value,color = Country.or.Area,label=(Country.or.Area))+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = Catch_Simpson_Ave),alpha=.5) +
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  labs(x = "Catch_CV",y = "Value_CV",size="Catch_λ_Ave",color = "Sub_Region_Name") +   
+  scale_x_continuous(breaks = seq(0,3.8,0.2)) +
+  scale_y_continuous(breaks = seq(0,2.2,0.2)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA)) +
+  geom_text_repel(colour="salmon4")
+
+print(p_3)
+
+
+```
+
+
+
+###漁獲高上位10カ国
+```{r}
+source("World_Function_Rapha.R")
+#漁獲量上位10カ国のCV
+Country_Value_10_CV <- fun_CV3(Country_Value_10,TotalCatch_Tonnes,Total_Value)
+
+
+#CountryごとのSimpsonの平均をとる
+Country_10_Simpson2 <- fun_Simpson4(Country_Catch_10,TotalCatch_Tonnes,Total_Value) %>% 
+  group_by(Country.or.Area) %>% 
+  summarise(Catch_Simpson_Ave = mean(Simpson_Catch_Total)) %>% 
+  na.omit()
+
+#Country_Catch_10_CVとCountry_10_Simpsonを結合する
+Country_Value_10_Simpson_CV <- cbind(Country_Value_10_CV,Country_10_Simpson2)
+
+#Sub_Region.Name_kohが二つあるので一つ消す
+Country_Value_10_Simpson_CV <- Country_Value_10_Simpson_CV[-4]
+
+
+
+EffectA=1.5
+
+p_4 <- ggplot(Country_Value_10_Simpson_CV) +
+  aes(x = CV_Catch,y = CV_Value,color = Country.or.Area,label=(Country.or.Area))+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = Catch_Simpson_Ave),alpha=.5) +
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  labs(x = "Catch_CV",y = "Value_CV",size="Catch_λ_Ave",color = "Sub_Region_Name") +   
+   scale_x_continuous(breaks = seq(0.5,2.2,0.2)) +
+   scale_y_continuous(breaks = seq(0.5,1.8,0.2)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA)) +
+  geom_text_repel(colour="salmon4")
+
+print(p_4)
+
+
+```
+
+
+
+
+
+
+#漁獲量・漁獲高の変動係数
+##年ごと、魚種ごと、地域ごと
+###Simpson_CV
+```{r}
+source("World_Function_Rapha.R")
+#RegionごとのCV
+Region_CV2 <- fun_CV4(World_Data,TotalCatch_Tonnes,Total_Value)
+
+
+#RegionごとのSimpsonの平均をとる
+Region_Simpson2 <- fun_Simpson3(World_Data,TotalCatch_Tonnes,Total_Value) %>% 
+  group_by(Region.Name_koh) %>% 
+  summarise(Catch_Simpson_Ave = mean(Simpson_Catch_Total))
+
+#Region_CVとRegion_Simpsonを結合する
+Region_Simpson_CV2 <- cbind(Region_CV2,Region_Simpson2)
+
+#Region.Name_kohが二つあるので一つ消す
+Region_Simpson_CV2 <- Region_Simpson_CV2[-4]
+
+
+
+EffectA=1.5
+
+p_5 <- ggplot(Region_Simpson_CV2) +
+  aes(x = CV_Catch,y = CV_Value,color = Region.Name_koh,label=(Region.Name_koh))+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = Catch_Simpson_Ave),alpha=.5) +
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  labs(x = "Catch_CV",y = "Value_CV",size="Catch_λ_Ave",color = "Region_Name") +   
+  scale_x_continuous(breaks = seq(0,13,2)) +
+  scale_y_continuous(breaks = seq(0,13,2)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA)) +
+  geom_text_repel(colour="salmon4")
+
+print(p_5)
+
+
+```
+
+
+
+
+##Subregion
+###Simpson_CV
+```{r}
+source("World_Function_Rapha.R")
+#Sub_RegionごとのCV
+Sub_Region_CV2 <- fun_CV5(World_Data,TotalCatch_Tonnes,Total_Value)
+
+
+#Sub_RegionごとのSimpsonの平均をとる
+Sub_Region_Simpson2 <- fun_Simpson5(World_Data,TotalCatch_Tonnes,Total_Value) %>% 
+  group_by(Sub.region.Name_koh) %>% 
+  summarise(Catch_Simpson_Ave = mean(Simpson_Catch_Total)) %>% 
+  na.omit()
+
+#Sub_Region_CVとSub_Region_Simpsonを結合する
+Sub_Region_Simpson_CV2 <- cbind(Sub_Region_CV2,Sub_Region_Simpson2)
+
+#Sub_Region.Name_kohが二つあるので一つ消す
+Sub_Region_Simpson_CV2 <- Sub_Region_Simpson_CV2[-4]
+
+
+
+EffectA=1.5
+
+p_6 <- ggplot(Sub_Region_Simpson_CV2) +
+  aes(x = CV_Catch,y = CV_Value,color = Sub.region.Name_koh,label=(Sub.region.Name_koh))+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = Catch_Simpson_Ave),alpha=.5) +
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  labs(x = "Catch_CV",y = "Value_CV",size="Catch_λ_Ave",color = "Sub_Region_Name") +   
+ scale_x_continuous(breaks = seq(0,13,2)) +
+  scale_y_continuous(breaks = seq(0,13,2)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA)) +
+  geom_text_repel(colour="salmon4")
+
+print(p_6)
+
+
+```
+
+
+
+
+
+#漁獲量・漁獲高ランキングでのCV
+##漁獲量・漁獲高のCV
+```{r}
+#漁獲量上位10カ国のデータセットを作る
+Country_Catch_10_2 <- World_Data %>% 
+  filter(Catch_Ranking == 1:10)
+
+#漁獲高上位10カ国のデータセットを作る
+Country_Value_10_2 <- World_Data %>% 
+  filter(Value_Ranking == 1:10)
+
+```
+
+
+###漁獲量上位10カ国
+```{r}
+source("World_Function_Rapha.R")
+#漁獲量上位10カ国のCV
+Country_Catch_10_CV2 <- fun_CV6(Country_Catch_10,TotalCatch_Tonnes,Total_Value)
+
+
+#CountryごとのSimpsonの平均をとる
+Country_10_Simpson3 <- fun_Simpson4(Country_Catch_10,TotalCatch_Tonnes,Total_Value) %>% 
+  group_by(Country.or.Area) %>% 
+  summarise(Catch_Simpson_Ave = mean(Simpson_Catch_Total)) %>% 
+  na.omit()
+
+#Country_Catch_10_CVとCountry_10_Simpsonを結合する
+Country_Catch_10_Simpson_CV2 <- cbind(Country_Catch_10_CV2,Country_10_Simpson3)
+
+#Sub_Region.Name_kohが二つあるので一つ消す
+Country_Catch_10_Simpson_CV2 <- Country_Catch_10_Simpson_CV2[-4]
+
+
+
+EffectA=1.5
+
+p_7 <- ggplot(Country_Catch_10_Simpson_CV2) +
+  aes(x = CV_Catch,y = CV_Value,color = Country.or.Area,label=(Country.or.Area))+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = Catch_Simpson_Ave),alpha=.5) +
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  labs(x = "Catch_CV",y = "Value_CV",size="Catch_λ_Ave",color = "Sub_Region_Name") +   
+  scale_x_continuous(breaks = seq(0,8,1)) +
+  scale_y_continuous(breaks = seq(0,8,1)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA)) +
+  geom_text_repel(colour="salmon4")
+
+print(p_7)
+
+
+```
+
+
+
+###漁獲高上位10カ国
+```{r}
+source("World_Function_Rapha.R")
+#漁獲量上位10カ国のCV
+Country_Value_10_CV2 <- fun_CV6(Country_Value_10,TotalCatch_Tonnes,Total_Value)
+
+
+#CountryごとのSimpsonの平均をとる
+Country_10_Simpson4 <- fun_Simpson4(Country_Catch_10,TotalCatch_Tonnes,Total_Value) %>% 
+  group_by(Country.or.Area) %>% 
+  summarise(Catch_Simpson_Ave = mean(Simpson_Catch_Total)) %>% 
+  na.omit()
+
+#Country_Catch_10_CVとCountry_10_Simpsonを結合する
+Country_Value_10_Simpson_CV2 <- cbind(Country_Value_10_CV2,Country_10_Simpson4)
+
+#Sub_Region.Name_kohが二つあるので一つ消す
+Country_Value_10_Simpson_CV2 <- Country_Value_10_Simpson_CV2[-4]
+
+
+
+EffectA=1.5
+
+p_8 <- ggplot(Country_Value_10_Simpson_CV2) +
+  aes(x = CV_Catch,y = CV_Value,color = Country.or.Area,label=(Country.or.Area))+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = Catch_Simpson_Ave),alpha=.5) +
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  labs(x = "Catch_CV",y = "Value_CV",size="Catch_λ_Ave",color = "Sub_Region_Name") +   
+   scale_x_continuous(breaks = seq(0,7,1)) +
+   scale_y_continuous(breaks = seq(0,7,1)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA)) +
+  geom_text_repel(colour="salmon4")
+
+print(p_8)
+
+
+```
+
+
+
+
+
+
+
+
+

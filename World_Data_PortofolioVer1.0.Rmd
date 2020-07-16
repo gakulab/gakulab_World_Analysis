@@ -1,0 +1,533 @@
+---
+title: "World_Data_PortofolioVer1.0"
+author: '@Kohsuke'
+date: "5/27/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+# 1 準備：
+## 1-0 概要
+-オリジナルデータから.rdsファイルの作成
+-
+
+## Library読み込む
+```{r echo=TRUE}
+# 現在の環境にある変数の消去
+rm(list = ls(all=TRUE))
+#解析処理に関するセットアップ、パッケージの読み込みなど
+library(tidyverse)
+library(dplyr)
+library(ggsci)
+library(gdata)
+library(DT)
+library(xtable)
+library(openxlsx)
+library(ggrepel)
+library(formattable)
+library(gridExtra)
+```
+
+
+
+## オリジナルデータの読み込み
+```{r}
+World_Data <- read.csv("Working_Data/World/World_Fisheries_Data.csv",
+                       header = TRUE,fileEncoding = "CP932")
+
+
+##データクリーニング　Catch,Priceの０以下を除去、NAを除去
+World_Data <- World_Data %>% 
+  filter(!TotalCatch_Tonnes <= 0) %>% 
+  filter(!Price.DHC <= 0) %>% 
+  na.omit()
+
+#FishingEntityIDとTaxonKeyをfactorにへんかん
+World_Data$FishingEntityID <- as.factor(World_Data$FishingEntityID)
+World_Data$TaxonKey <- as.factor(World_Data$TaxonKey)
+
+
+```
+
+オリジナルデータ：781,060
+クリーニングデータ：672099
+
+## 2-2 データ数
+```{r}
+options(scipen=100000)　#指数表示を避けるコード
+
+# クロス集計をおこないデータの概観の把握
+# xtabs関数でモデル式で多次元分割表を作成
+# https://teramonagi.hatenablog.com/entry/20150312/1426109245
+
+
+#魚種ごとのデータ数
+Cross_Table_0 <- World_Data %>%
+  xtabs(~TaxonKey, .)
+Cross_Table_0 <- as.data.frame(Cross_Table_0)
+datatable(Cross_Table_0)
+
+#年毎の各魚種のデータ数
+Cross_Table_1 <- World_Data %>%
+  xtabs(~TaxonKey+Year, .)
+Cross_Table_1 <- as.data.frame(Cross_Table_1)
+datatable(Cross_Table_1)
+
+
+#年別のデータ数
+Cross_Table_2 <- World_Data %>%
+  xtabs(~Year, .) 
+Cross_Table_2 <- as.data.frame(Cross_Table_2)
+datatable(Cross_Table_2)
+
+
+#国別の漁業種のデータ数
+Cross_Table_4 <- World_Data %>%
+  xtabs(~FishingEntityID, .) 
+Cross_Table_4 <- as.data.frame(Cross_Table_4)
+datatable(Cross_Table_4)
+
+
+
+```
+
+魚種：1861
+年　：1950~2010
+国　：197
+
+
+##  各国の漁獲割合
+```{r}
+country_Rate <- World_Data %>% 
+  group_by(FishingEntityID,Year) %>% 
+  summarise(Annual_TotalCatch_Tonnes = sum(TotalCatch_Tonnes),
+            Annual_Price.DHC = sum(Price.DHC)) %>%
+    mutate(Percentage_Catch = (Annual_TotalCatch_Tonnes/sum(Annual_TotalCatch_Tonnes))*100,
+           Percentage_Value = (Annual_Price.DHC/sum(Annual_Price.DHC))*100) %>% 
+  arrange(Year)
+
+g1 <- ggplot(country_Rate) +
+  aes(x = Year,y =  Percentage_Catch,fill = FishingEntityID)+
+  geom_bar(stat = "identity",position = "fill") +
+  theme_gray(base_size = 15,base_family = "HiraKakuProN-W3") +
+  labs(x = "Year",y = "Percentage_Catch") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_x_continuous(breaks = seq(1950,2010,5)) +
+  scale_fill_hue(name = "country") 
+g1
+
+#file1 <- "加賀支所各漁業種漁獲量割合.png"
+#  png(file1, width = 800, height = 600)
+#  print(g1)
+#  dev.off
+
+g2 <- ggplot(country_Rate) +
+  aes(x = Year,y =  Percentage_Value,fill = FishingEntityID)+
+  geom_bar(stat = "identity",position = "fill") +
+  theme_gray(base_size = 15,base_family = "HiraKakuProN-W3") +
+  labs(x = "Year",y = "Percentage_Value") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_x_continuous(breaks = seq(1950,2010,5)) +
+  scale_fill_hue(name = "country") 
+g2
+
+#file2 <- "加賀支所各漁業種漁獲高割合.png"
+#  png(file2, width = 800, height = 600)
+#  print(g2)
+#  dev.off
+
+```
+
+
+## 年毎のデータ頻度
+```{r}
+Yearly_Data = Cross_Table_2 
+
+
+
+ggplot(Yearly_Data) +
+  theme_light(base_size = 11,base_family = "HiraKakuProN-W3") +
+  aes(x = Year,y = Freq,fill = Year) +
+  geom_bar(stat = "identity") +
+  labs(x = "Year",y = "data_number") +
+  guides(fill = FALSE) +
+  scale_x_discrete(breaks = seq(1950,2010,5)) +
+  scale_y_continuous(breaks = seq(0,15000,3000)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  
+
+#年ごとのデータ数
+```
+
+
+
+## 各年の漁獲量・漁獲高
+```{r}
+source("World_Function.R")
+
+#各年の漁獲量・漁獲高の推移
+World_Catch_Value_Yearly <-fun_Catch_Value(World_Data,TotalCatch_Tonnes,Price.DHC)
+
+g3 <- ggplot(World_Catch_Value_Yearly) +
+  aes(x = Year,y = TotalCatch_Tonnes,fill = Year) +
+  geom_bar(stat = "identity") +
+  theme_light(base_size = 15,base_family = "HiraKakuProN-W3") +
+  labs(x = "Year",y = "Total_Catch(ton)）") +
+  guides(fill = FALSE) +
+  scale_x_continuous(breaks = seq(1950,2010,5)) +
+  scale_y_continuous(breaks = seq(0,120000000,20000000)) +
+  expand_limits(y = 0) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+g3
+
+
+g4 <- ggplot(World_Catch_Value_Yearly) +
+  aes(x = Year,y = Price.DHC,fill = Year) +
+  geom_bar(stat = "identity") +
+  theme_light(base_size = 15,base_family = "HiraKakuProN-W3") +
+  labs(x = "Year",y = "Total_Value(USD)") +
+  guides(fill = FALSE) +
+  scale_x_continuous(breaks = seq(1950,2010,5)) +
+  scale_y_continuous(breaks = seq(0,50000000,10000000)) +
+  expand_limits(y = 0) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+g4
+
+
+```
+
+
+
+
+## HHI 
+```{r}
+source("World_Function.R")
+
+#年ごとのHHI
+
+World_HHI_all_Yearly <- fun_HHI(World_Data,TotalCatch_Tonnes,Price.DHC)
+  
+#列を見やすいように並び替える
+World_HHI_all_Yearly <- World_HHI_all_Yearly[c(1,8,2,3,4,5,6,7)]
+  
+World_HHI_all_Yearly$Year <- as.integer(World_HHI_all_Yearly$Year)
+
+EffectA=1.5
+
+g5 <- ggplot(World_HHI_all_Yearly, aes(x = HHI_Catch_Total,y = HHI_Value_Total,color = Year, label=(Year)) )+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect(fill="gray81"))+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.5) +
+  scale_colour_gradient(name="年",low = "red", high = "blue",
+                        breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5)) +
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  labs(x = "Catch_HHI",y = "Value_HHI",size="Total_Catch(ton)") +
+  scale_x_continuous(limits = c(0,700)) +
+  scale_y_continuous(limits = c(0,50))+
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,20/EffectA))+ #  adjust scale effects 
+  geom_text_repel(colour="black")
+g5
+
+
+```
+
+
+
+## シンプソン指数λ
+```{r}
+source("World_Function.R")
+
+#年ごとのλ
+World_Simpson_all_Yearly <- fun_Simpson(World_Data,TotalCatch_Tonnes,Price.DHC)
+
+World_Simpson_all_Yearly <- World_Simpson_all_Yearly[c(1,8,2,3,4,5,6,7)]
+
+World_Simpson_all_Yearly$Year <- as.integer(World_Simpson_all_Yearly$Year)
+
+EffectA=1.5
+
+g6 <- ggplot(World_Simpson_all_Yearly, aes(x = Simpson_Catch_Total,y = Simpson_Value_Total,color = Year, label=(Year)) )+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect(fill="gray81"))+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.5) +
+  scale_colour_gradient(name="年",low = "red", high = "blue",
+                        breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5)) +
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  labs(x = "Catch_λ",y = "Value_λ",size="Total_Catch(ton)") +
+  scale_x_continuous(limits = c(0,70)) +
+  scale_y_continuous(limits = c(0,400))+
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,20/EffectA))+ #  adjust scale effects 
+  geom_text_repel(colour="black")
+
+g6
+
+
+```
+
+
+
+## シャノン・ウィナー指数H'
+```{r}
+source("World_Function.R")
+
+#年ごとのH'
+World_Shannon_all_Yearly = fun_Shannon(World_Data,TotalCatch_Tonnes,Price.DHC)
+
+World_Shannon_all_Yearly <- World_Shannon_all_Yearly[c(1,8,2,3,4,5,6,7)]
+
+World_Shannon_all_Yearly$Year <- as.integer(World_Shannon_all_Yearly$Year)
+
+EffectA=1.5
+
+g7 <- ggplot(World_Shannon_all_Yearly, aes(x = Shannon_Catch_Total,y = Shannon_Value_Total,color = Year, label=(Year)) )+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect(fill="gray81"))+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.5) +
+  scale_colour_gradient(name="年",low = "red", high = "blue",
+                        breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5)) +
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  labs(x = "Catch_H'",y = "Value_H'",size="Total_Catch(ton)") +
+  scale_x_continuous(limits = c(6,7.5)) +
+  scale_y_continuous(limits = c(8.5,10))+
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,20/EffectA))+ #  adjust scale effects 
+  geom_text_repel(colour="black")
+
+g7
+
+
+```
+
+
+
+
+
+
+
+
+
+#2 各国
+## HHI
+```{r}
+source("World_Function.R")
+
+HHI_country_Data <- fun_HHI2(World_Data,TotalCatch_Tonnes,Price.DHC)
+  
+
+#FishingEntityIDとNumberを紐付ける
+#FishingEntityIDは連続した数字ではないために分析に使いにくい
+HHI_rate <- as.data.frame(unique(HHI_country_Data$FishingEntityID))
+  
+HHI_rate <- HHI_rate %>% 
+    mutate(Number = as.factor(1:197))
+  
+#列名の変更
+names(HHI_rate) <- c("FishingEntityID","Number")
+
+#HHI_country_DataとFishingEntityIDで組み合わせる
+#FishingEntityIDに対応したNumberが付与され分析が容易になる
+HHI_country_Data <-full_join(HHI_country_Data,HHI_rate,by = "FishingEntityID")
+
+
+
+```
+
+
+
+## HHIのプロット
+```{r}
+#FishingEntityIDの要素の長さを変数にする
+for (i in 1:length(unique(HHI_rate$FishingEntityID))) {
+
+#HHI_country_DataからFishingEntityIDに対応した連続した値であるNumberでfilterをかける
+HHI_loop <- HHI_country_Data %>% 
+  filter(Number == i)
+
+#各国におけるHHI_Total_Catch,HHI_Total_Valueの最小と最大を格納する
+HHI_Max <- max(HHI_loop$HHI_Catch_Total,HHI_loop$HHI_Value_Total)
+HHI_Min <- min(HHI_loop$HHI_Catch_Total,HHI_loop$HHI_Value_Total)
+
+
+EffectA=1.5
+
+p <- ggplot(HHI_loop) +
+  aes(x = HHI_Catch_Total,y = HHI_Value_Total,color = Year, label=(Year))+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect(fill="gray81"))+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.5) +
+  scale_colour_gradient(name="年",low = "red", high = "blue",
+                        breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5)) +
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  labs(x = "Catch_HHI",y = "Value_HHI",size="Total_Catch(ton)",
+       title = paste("country",HHI_rate$FishingEntityID[i],sep = "-")) +　#タイトルはFishingEntityIDなので国を表す
+  scale_x_continuous(limits = c(HHI_Min,HHI_Max)) +　　　　　　　　　　　
+  scale_y_continuous(limits = c(HHI_Min,HHI_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,20/EffectA))+ #  adjust scale effects 
+  geom_text_repel(colour="black")
+
+print(p)
+
+}
+
+
+```
+
+
+
+
+
+## Simpson
+```{r}
+source("World_Function.R")
+Simpson_country_Data <- fun_Simpson2(World_Data,TotalCatch_Tonnes,Price.DHC)
+
+#FishingEntityIDとNumberを紐付ける
+#FishingEntityIDは連続した数字ではないために分析に使いにくい
+Simpson_rate <- as.data.frame(unique(Simpson_country_Data$FishingEntityID))
+  
+  Simpson_rate <- Simpson_rate %>% 
+    mutate(Number = as.factor(1:197))
+  
+#列名の変更  
+names(Simpson_rate) <- c("FishingEntityID","Number")
+
+#Simpson_country_DataとFishingEntityIDで組み合わせる
+#FishingEntityIDに対応したNumberが付与され分析が容易になる
+Simpson_country_Data <-full_join(Simpson_country_Data,Simpson_rate,by = "FishingEntityID")
+
+```
+
+
+## Simpsonのプロット
+```{r}
+#FishingEntityIDの要素の長さを変数にする
+for (i in 1:length(unique(Simpson_rate$FishingEntityID))) {
+
+  #Simpson_country_DataからFishingEntityIDに対応した連続した値であるNumberでfilterをかける
+Simpson_loop <- Simpson_country_Data %>% 
+  filter(Number == i)
+
+#各国におけるSimpson_Catch_Total,Simpson_Value_Totalの最小と最大を格納する
+Simpson_Max <- max(Simpson_loop$Simpson_Catch_Total,Simpson_loop$Simpson_Value_Total)
+Simpson_Min <- min(Simpson_loop$Simpson_Catch_Total,Simpson_loop$Simpson_Value_Total)
+
+
+EffectA=1.5
+
+p <- ggplot(Simpson_loop) +
+  aes(x = Simpson_Catch_Total,y = Simpson_Value_Total,color = Year, label=(Year))+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect(fill="gray81"))+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.5) +
+  scale_colour_gradient(name="年",low = "red", high = "blue",
+                        breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5)) +
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  labs(x = "Catch_λ",y = "Value_λ",size="Total_Catch(ton)",
+       title = paste("country",Simpson_rate$FishingEntityID[i],sep = "-")) +   #タイトルはFishingEntityIDなので国を表す
+  scale_x_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  scale_y_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,20/EffectA))+ #  adjust scale effects 
+  geom_text_repel(colour="black")
+
+
+print(p)
+
+}
+
+```
+
+
+
+## Shannon
+```{r}
+source("World_Function.R")
+Shannon_country_Data <- fun_Shannon2(World_Data,TotalCatch_Tonnes,Price.DHC)
+
+#FishingEntityIDとNumberを紐付ける
+#FishingEntityIDは連続した数字ではないために分析に使いにくい
+Shannon_rate <- as.data.frame(unique(Shannon_country_Data$FishingEntityID))
+  
+  Shannon_rate <- Shannon_rate %>% 
+    mutate(Number = as.factor(1:197))
+ 
+#列名の変更   
+names(Shannon_rate) <- c("FishingEntityID","Number")
+
+#Shannon_country_DataとFishingEntityIDで組み合わせる
+#FishingEntityIDに対応したNumberが付与され分析が容易になる
+Shannon_country_Data <-full_join(Shannon_country_Data,Shannon_rate,by = "FishingEntityID")
+
+```
+
+
+## Shanonnのプロット
+```{r}
+#FishingEntityIDの要素の長さを変数にする
+for (i in 1:length(unique(Shannon_rate$FishingEntityID))) {
+
+ #Shannon_country_DataからFishingEntityIDに対応した連続した値であるNumberでfilterをかける
+Shannon_loop <- Shannon_country_Data %>% 
+  filter(Number == i)
+
+#各国におけるShannon_Catch_Total,Shannon_Value_Totalの最小と最大を格納する
+Shannon_Max <- max(Shannon_loop$Shannon_Catch_Total,Shannon_loop$Shannon_Value_Total)
+Shannon_Min <- min(Shannon_loop$Shannon_Catch_Total,Shannon_loop$Shannon_Value_Total)
+
+
+EffectA=1.5
+
+p <- ggplot(Shannon_loop) +
+  aes(x = Shannon_Catch_Total,y = Shannon_Value_Total,color = Year, label=(Year))+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect(fill="gray81"))+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.5) +
+  scale_colour_gradient(name="年",low = "red", high = "blue",
+                        breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5)) +
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  labs(x = "Catch_λ",y = "Value_λ",size="Total_Catch(ton)",
+       title = paste("country",Shannon_rate$FishingEntityID[i],sep = "-")) +  #タイトルはFishingEntityIDなので国を表す
+  scale_x_continuous(limits = c(Shannon_Min,Shannon_Max)) +
+  scale_y_continuous(limits = c(Shannon_Min,Shannon_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,20/EffectA))+ #  adjust scale effects 
+  geom_text_repel(colour="black")
+
+print(p)
+
+}
+
+```
+
+

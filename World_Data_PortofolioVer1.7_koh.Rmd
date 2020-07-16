@@ -1,0 +1,1114 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+¥123567890---
+title: "World_Data_PortofolioVer1.6"
+author: '@Kohsuke'
+date: "6/5/2020
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Sub region analysis in this Rmd
+
+- 
+
+
+# 1 準備：
+## 1-0 概要
+-オリジナルデータから.rdsファイルの作成
+-
+
+## Library読み込む
+```{r echo=TRUE}
+# 現在の環境にある変数の消去
+rm(list = ls(all=TRUE))
+#解析処理に関するセットアップ、パッケージの読み込みなど
+library(tidyverse)
+library(dplyr)
+library(ggsci)
+library(gdata)
+library(DT)
+library(xtable)
+library(openxlsx)
+library(ggrepel)
+library(formattable)
+library(gridExtra)
+library(stringr)
+```
+
+
+## 分析データ読み込み
+```{r}
+World_Data <- readRDS("Working_Data/World/World_Data_cleaned_6June20_koh.rds")
+Production_Ranking_Cou <- read.csv("Working_Data/World/Production_Ranking_Cou.csv")
+
+Catch_Ranking <- Production_Ranking_Cou %>% 
+  select(Country.or.Area,Catch_Ranking) %>% 
+  arrange(Catch_Ranking)
+
+Value_Ranking <- Production_Ranking_Cou %>% 
+  select(Country.or.Area,Value_Ranking) %>% 
+  arrange(Value_Ranking)
+
+  
+options(scipen=100000)　#指数表示を避けるコード
+
+```
+
+
+
+##漁業生産ランキング上位10ヵ国の多様性指数
+##HHI
+###漁獲量上位10カ国
+```{r}
+source("World_Function_Rapha.R")
+Country_HHI1 <- fun_HHI3(World_Data,TotalCatch_Tonnes,Total_Value)
+
+Country_HHI1 <- left_join(Country_HHI1,Catch_Ranking,by = "Country.or.Area")
+
+Catch_Ranking_Order <- as.factor(unique(Catch_Ranking$Catch_Ranking))
+
+#Country.or.Areaをlevel順にする
+Country_HHI1 <- arrange(mutate(Country_HHI1,
+             Catch_Ranking = factor(Catch_Ranking,levels = Catch_Ranking_Order)),Catch_Ranking)
+
+
+#facet_wrapにおけるラベル変更に使う変数
+labeli1 <- as_labeller(c(`1` = "Japan",`2` = "Peru", `3` = "China",
+                        `4` = "Chile",`5` = "Russian Federation", `6` = "United States of America",
+                        `7` = "Thailand",`8` = "Norway", `9` = "Indonesia",`10` = "India"))
+
+```
+
+
+###漁獲高上位10カ国
+```{r}
+source("World_Function_Rapha.R")
+Country_HHI2 <- fun_HHI3(World_Data,TotalCatch_Tonnes,Total_Value)
+
+Country_HHI2 <- left_join(Country_HHI2,Value_Ranking,by = "Country.or.Area")
+
+Value_Ranking_Order <- as.factor(unique(Value_Ranking$Value_Ranking))
+
+#Country.or.Areaをlevel順にする
+Country_HHI2 <- arrange(mutate(Country_HHI2,
+             Value_Ranking = factor(Value_Ranking,levels = Catch_Ranking_Order)),Value_Ranking)
+
+
+#facet_wrapにおけるラベル変更に使う変数
+labeli2 <- as_labeller(c(`1` = "Japan",`2` = "United States of America", `3` = "China",
+                        `4` = "Russian Federation",`5` = "Thailand", `6` = "Spain",
+                        `7` = "Canada",`8` = "Chile", `9` = "Italy",`10` = " Republic of Korea"))
+
+```
+
+
+
+###上位10カ国
+```{r}
+Country_HHI1_10 <- Country_HHI1 %>% 
+  filter(Catch_Ranking == 1:10)
+  
+HHI_Max <- max(Country_HHI1_10$HHI_Catch_Total,Country_HHI1_10$HHI_Value_Total)
+HHI_Min <- min(Country_HHI1_10$HHI_Catch_Total,Country_HHI1_10$HHI_Value_Total)
+
+
+EffectA=1.5
+
+p_55 <- ggplot(Country_HHI1_10) +
+  aes(x = HHI_Catch_Total,y = HHI_Value_Total,color = Year) +
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Catch_Ranking,labeller = labeli1)　+
+  labs(x = "Catch_HHI",y = "Value_HHI",size="Total_Catch(million ton)") +　
+ # scale_x_continuous(limits = c(HHI_Min,HHI_Max)) +　　　　　　　　　　　
+#  scale_y_continuous(limits = c(HHI_Min,HHI_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+
+ #左上から上位順にプロットされている
+print(p_55)
+
+
+Country_HHI2_10 <- Country_HHI2 %>% 
+  filter(Value_Ranking == 1:10)
+  
+HHI_Max <- max(Country_HHI2_10$HHI_Catch_Total,Country_HHI2_10$HHI_Value_Total)
+HHI_Min <- min(Country_HHI2_10$HHI_Catch_Total,Country_HHI2_10$HHI_Value_Total)
+
+
+EffectA=1.5
+
+p_56 <- ggplot(Country_HHI2_10) +
+  aes(x = HHI_Catch_Total,y = HHI_Value_Total,color = Year) +
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Value_Ranking,labeller = labeli2)　+
+  labs(x = "Catch_HHI",y = "Value_HHI",size="Total_Catch(million ton)") +　
+ # scale_x_continuous(limits = c(HHI_Min,HHI_Max)) +　　　　　　　　　　　
+#  scale_y_continuous(limits = c(HHI_Min,HHI_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+
+ #左上から上位順にプロットされている
+print(p_56)
+  
+```
+
+
+
+##Simpson
+###漁獲量上位10カ国
+```{r}
+source("World_Function_Rapha.R")
+Country_Simpson1 <- fun_Simpson2(World_Data,TotalCatch_Tonnes,Total_Value)
+
+Country_Simpson1 <- left_join(Country_Simpson1,Catch_Ranking,by = "Country.or.Area")
+
+
+#Country.or.Areaをlevel順にする
+Country_Simpson1 <- arrange(mutate(Country_Simpson1,
+             Catch_Ranking = factor(Catch_Ranking,levels = Catch_Ranking_Order)),Catch_Ranking)
+
+```
+
+
+###漁獲高上位10カ国
+```{r}
+source("World_Function_Rapha.R")
+Country_Simpson2 <- fun_Simpson2(World_Data,TotalCatch_Tonnes,Total_Value)
+
+Country_Simpson2 <- left_join(Country_Simpson2,Value_Ranking,by = "Country.or.Area")
+
+
+#Country.or.Areaをlevel順にする
+Country_Simpson2 <- arrange(mutate(Country_Simpson2,
+             Value_Ranking = factor(Value_Ranking,levels = Value_Ranking_Order)),Value_Ranking)
+
+```
+
+
+###上位10カ国
+```{r}
+#漁獲量上位10カ国
+Country_Simpson1_10 <- Country_Simpson1 %>% 
+ filter(Catch_Ranking == 1:10)
+
+Simpson_Max <- max(Country_Simpson1_10$Simpson_Catch_Total,
+                   Country_Simpson1_10$Simpson_Value_Total)
+
+Simpson_Min <- min(Country_Simpson1_10$Simpson_Catch_Total,
+                   Country_Simpson1_10$Simpson_Value_Total)
+
+
+EffectA=1.5
+
+p_57 <- ggplot(Country_Simpson1_10) +
+  aes(x = Simpson_Catch_Total,y = Simpson_Value_Total,color = Year)+
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Catch_Ranking,labeller = labeli1)　+
+  labs(x = "Catch_λ",y = "Value_λ",size="Total_Catch(million ton)") +   
+ #scale_x_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+#  scale_y_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+ #左上から上位順にプロットされている
+print(p_57)
+
+
+#漁獲高上位10カ国
+Country_Simpson2_10 <- Country_Simpson2 %>% 
+ filter(Value_Ranking == 1:10)
+
+Simpson_Max <- max(Country_Simpson2_10$Simpson_Catch_Total,
+                   Country_Simpson2_10$Simpson_Value_Total)
+
+Simpson_Min <- min(Country_Simpson2_10$Simpson_Catch_Total,
+                   Country_Simpson2_10$Simpson_Value_Total)
+
+
+EffectA=1.5
+
+p_58 <- ggplot(Country_Simpson2_10) +
+  aes(x = Simpson_Catch_Total,y = Simpson_Value_Total,color = Year)+
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Value_Ranking,labeller = labeli2)　+
+  labs(x = "Catch_λ",y = "Value_λ",size="Total_Catch(million ton)") +   
+ #scale_x_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+#  scale_y_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+ #左上から上位順にプロットされている
+print(p_58)
+
+```
+
+
+
+##Shannon
+###漁獲量上位10ヵ国
+```{r}
+source("World_Function_Rapha.R")
+Country_Shannon1 <- fun_Shannon2(World_Data,TotalCatch_Tonnes,Total_Value)
+
+Country_Shannon1 <- left_join(Country_Shannon1,Catch_Ranking,by = "Country.or.Area")
+
+
+#Country.or.Areaをlevel順にする
+Country_Shannon1 <- arrange(mutate(Country_Shannon1,
+             Catch_Ranking = factor(Catch_Ranking,levels = Catch_Ranking_Order)),Catch_Ranking)
+
+```
+
+
+###漁獲高上位10ヵ国
+```{r}
+source("World_Function_Rapha.R")
+Country_Shannon2 <- fun_Shannon2(World_Data,TotalCatch_Tonnes,Total_Value)
+
+Country_Shannon2 <- left_join(Country_Shannon2,Value_Ranking,by = "Country.or.Area")
+
+
+#Country.or.Areaをlevel順にする
+Country_Shannon2 <- arrange(mutate(Country_Shannon2,
+             Value_Ranking = factor(Value_Ranking,levels = Value_Ranking_Order)),Value_Ranking)
+
+```
+
+
+###上位10カ国
+```{r}
+#漁獲量上位10カ国
+Country_Shannon1_10 <- Country_Shannon1 %>% 
+ filter(Catch_Ranking == 1:10)
+
+Simpson_Max <- max(Country_Shannon1_10$Shannon_Catch_Total,
+                   Country_Shannon1_10$SShannon_Value_Total)
+
+Simpson_Min <- min(Country_Shannon1_10$Shannon_Catch_Total,
+                   Country_Shannon1_10$Shannon_Value_Total)
+
+
+EffectA=1.5
+
+p_59 <- ggplot(Country_Shannon1_10) +
+  aes(x = Shannon_Catch_Total,y = Shannon_Value_Total,color = Year)+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Catch_Ranking,labeller = labeli2)　+
+  labs(x = "Catch_λ",y = "Value_λ",size="Total_Catch(million ton)") +   
+ #scale_x_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+#  scale_y_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+ #左上から上位順にプロットされている
+print(p_59)
+
+
+#漁獲高上位10カ国
+Country_Shannon2_10 <- Country_Shannon2 %>% 
+ filter(Value_Ranking == 1:10)
+
+Simpson_Max <- max(Country_Shannon2_10$Shannon_Catch_Total,
+                   Country_Shannon2_10$SShannon_Value_Total)
+
+Simpson_Min <- min(Country_Shannon2_10$Shannon_Catch_Total,
+                   Country_Shannon2_10$Shannon_Value_Total)
+
+
+EffectA=1.5
+
+p_60 <- ggplot(Country_Shannon2_10) +
+  aes(x = Shannon_Catch_Total,y = Shannon_Value_Total,color = Year)+
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1980,
+                          breaks = seq(1950, 2010,by=5),
+                        labels = seq(1950, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Value_Ranking,labeller = labeli1)　+
+  labs(x = "Catch_λ",y = "Value_λ",size="Total_Catch(million ton)") +   
+ #scale_x_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+#  scale_y_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+ #左上から上位順にプロットされている
+print(p_60)
+```
+
+
+
+
+
+
+#EEZ設定される前とされた後での比較
+##上位10カ国
+###HHI
+####設定前
+```{r}
+Country_HHI3_10 <- Country_HHI1_10 %>% 
+  filter(Year < 1980)
+
+
+EffectA=1.5
+
+p_61 <- ggplot(Country_HHI3_10) +
+  aes(x = HHI_Catch_Total,y = HHI_Value_Total,color = Year) +
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1965,
+                          breaks = seq(1950, 1980,by=5),
+                        labels = seq(1950, 1980,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Catch_Ranking,labeller = labeli1)　+
+  labs(x = "Catch_HHI",y = "Value_HHI",size="Total_Catch(million ton)") +　
+ # scale_x_continuous(limits = c(HHI_Min,HHI_Max)) +　　　　　　　　　　　
+# scale_y_continuous(limits = c(HHI_Min,HHI_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+ #左上から上位順にプロットされている
+print(p_61)
+
+
+Country_HHI4_10 <- Country_HHI2_10 %>% 
+   filter(Year < 1980)
+  
+
+EffectA=1.5
+
+p_62 <- ggplot(Country_HHI4_10) +
+  aes(x = HHI_Catch_Total,y = HHI_Value_Total,color = Year) +
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1965,
+                          breaks = seq(1950, 1980,by=5),
+                        labels = seq(1950, 1980,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Value_Ranking,labeller = labeli2)　+
+  labs(x = "Catch_HHI",y = "Value_HHI",size="Total_Catch(million ton)") +　
+ # scale_x_continuous(limits = c(HHI_Min,HHI_Max)) +　　　　　　　　　　　
+#  scale_y_continuous(limits = c(HHI_Min,HHI_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+
+ #左上から上位順にプロットされている
+print(p_62)
+  
+
+```
+
+
+####設定後
+```{r}
+Country_HHI5_10 <- Country_HHI1_10 %>% 
+  filter(Year >= 1980)
+
+
+EffectA=1.5
+
+p_63 <- ggplot(Country_HHI5_10) +
+  aes(x = HHI_Catch_Total,y = HHI_Value_Total,color = Year) +
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1995,
+                          breaks = seq(1980, 2010,by=5),
+                        labels = seq(1980, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Catch_Ranking,labeller = labeli1)　+
+  labs(x = "Catch_HHI",y = "Value_HHI",size="Total_Catch(million ton)") +　
+ # scale_x_continuous(limits = c(HHI_Min,HHI_Max)) +　　　　　　　　　　　
+# scale_y_continuous(limits = c(HHI_Min,HHI_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+ #左上から上位順にプロットされている
+print(p_63)
+
+
+Country_HHI6_10 <- Country_HHI2_10 %>% 
+   filter(Year >= 1980)
+  
+
+EffectA=1.5
+
+p_64 <-  ggplot(Country_HHI6_10) +
+  aes(x = HHI_Catch_Total,y = HHI_Value_Total,color = Year) +
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1995,
+                          breaks = seq(1980, 2010,by=5),
+                        labels = seq(1980, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Value_Ranking,labeller = labeli2)　+
+  labs(x = "Catch_HHI",y = "Value_HHI",size="Total_Catch(million ton)") +　
+ # scale_x_continuous(limits = c(HHI_Min,HHI_Max)) +　　　　　　　　　　　
+#  scale_y_continuous(limits = c(HHI_Min,HHI_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+
+ #左上から上位順にプロットされている
+print(p_64)
+  
+
+```
+
+
+
+#EEZ設定される前とされた後での比較
+##上位10カ国
+###Simpson
+####設定前
+```{r}
+#漁獲量上位10カ国
+Country_Simpson3_10 <- Country_Simpson1_10 %>% 
+ filter(Year < 1980)
+
+#Simpson_Max <- max(Country_Simpson1_10$Simpson_Catch_Total,
+                  # Country_Simpson1_10$Simpson_Value_Total)
+
+#Simpson_Min <- min(Country_Simpson1_10$Simpson_Catch_Total,
+                   #Country_Simpson1_10$Simpson_Value_Total)
+
+
+EffectA=1.5
+
+p_65 <- ggplot(Country_Simpson3_10) +
+  aes(x = Simpson_Catch_Total,y = Simpson_Value_Total,color = Year) +
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1965,
+                          breaks = seq(1950, 1980,by=5),
+                        labels = seq(1950, 1980,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Catch_Ranking,labeller = labeli1)　+
+  labs(x = "Catch_Simpson",y = "Value_Simpson",size="Total_Catch(million ton)") +　
+ # scale_x_continuous(limits = c(HHI_Min,HHI_Max)) +　　　　　　　　　　　
+# scale_y_continuous(limits = c(HHI_Min,HHI_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+ #左上から上位順にプロットされている
+print(p_65)
+
+
+Country_Simpson4_10 <- Country_Simpson2_10 %>% 
+ filter(Year < 1980)
+
+EffectA=1.5
+
+p_66 <- ggplot(Country_Simpson4_10) +
+  aes(x = Simpson_Catch_Total,y = Simpson_Value_Total,color = Year) +
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1965,
+                          breaks = seq(1950, 1980,by=5),
+                        labels = seq(1950, 1980,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Value_Ranking,labeller = labeli2)　+
+  labs(x = "Catch_Simpson",y = "Value_Simpson",size="Total_Catch(million ton)") +　
+ # scale_x_continuous(limits = c(HHI_Min,HHI_Max)) +　　　　　　　　　　　
+#  scale_y_continuous(limits = c(HHI_Min,HHI_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+
+ #左上から上位順にプロットされている
+print(p_66)
+
+```
+
+
+
+####設定後
+```{r}
+#漁獲量上位10カ国
+Country_Simpson5_10 <- Country_Simpson1_10 %>% 
+ filter(Year >= 1980)
+
+#Simpson_Max <- max(Country_Simpson1_10$Simpson_Catch_Total,
+                  # Country_Simpson1_10$Simpson_Value_Total)
+
+#Simpson_Min <- min(Country_Simpson1_10$Simpson_Catch_Total,
+                   #Country_Simpson1_10$Simpson_Value_Total)
+
+
+EffectA=1.5
+
+p_67 <- ggplot(Country_Simpson5_10) +
+  aes(x = Simpson_Catch_Total,y = Simpson_Value_Total,color = Year) +
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1995,
+                          breaks = seq(1980, 2010,by=5),
+                        labels = seq(1980, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Catch_Ranking,labeller = labeli1)　+
+  labs(x = "Catch_Simpson",y = "Value_Simpson",size="Total_Catch(million ton)") +　
+ # scale_x_continuous(limits = c(HHI_Min,HHI_Max)) +　　　　　　　　　　　
+# scale_y_continuous(limits = c(HHI_Min,HHI_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+ #左上から上位順にプロットされている
+print(p_67)
+
+
+Country_Simpson6_10 <- Country_Simpson2_10 %>% 
+ filter(Year >= 1980)
+
+EffectA=1.5
+
+p_68 <- ggplot(Country_Simpson6_10) +
+  aes(x = Simpson_Catch_Total,y = Simpson_Value_Total,color = Year) +
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1995,
+                          breaks = seq(1980, 2010,by=5),
+                        labels = seq(1980, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Value_Ranking,labeller = labeli1)　+
+  labs(x = "Catch_Simpson",y = "Value_Simpson",size="Total_Catch(million ton)") +　
+ # scale_x_continuous(limits = c(HHI_Min,HHI_Max)) +　　　　　　　　　　　
+# scale_y_continuous(limits = c(HHI_Min,HHI_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+       axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+
+ #左上から上位順にプロットされている
+print(p_68)
+
+```
+
+
+
+#EEZ設定される前とされた後での比較
+##上位10カ国
+###Shannon
+####設定前
+```{r}
+#漁獲量上位10カ国
+Country_Shannon3_10 <- Country_Shannon1_10 %>% 
+ filter(Year < 1980)
+
+
+
+
+EffectA=1.5
+
+p_69 <- ggplot(Country_Shannon3_10) +
+  aes(x = Shannon_Catch_Total,y = Shannon_Value_Total,color = Year)+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1965,
+                          breaks = seq(1950, 1980,by=5),
+                        labels = seq(1950, 1980,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Catch_Ranking,labeller = labeli2)　+
+  labs(x = "Catch_λ",y = "Value_λ",size="Total_Catch(million ton)") +   
+ #scale_x_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+#  scale_y_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+ #左上から上位順にプロットされている
+print(p_69)
+
+
+#漁獲高上位10カ国
+Country_Shannon4_10 <- Country_Shannon2_10 %>% 
+ filter(Year < 1980)
+
+
+
+EffectA=1.5
+
+p_70 <- ggplot(Country_Shannon4_10) +
+  aes(x = Shannon_Catch_Total,y = Shannon_Value_Total,color = Year)+
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1965,
+                          breaks = seq(1950, 1980,by=5),
+                        labels = seq(1950, 1980,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Value_Ranking,labeller = labeli1)　+
+  labs(x = "Catch_λ",y = "Value_λ",size="Total_Catch(million ton)") +   
+ #scale_x_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+#  scale_y_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+ #左上から上位順にプロットされている
+print(p_70)
+```
+
+
+
+
+
+####設定後
+```{r}
+#漁獲量上位10カ国
+Country_Shannon5_10 <- Country_Shannon1_10 %>% 
+ filter(Year >= 1980)
+
+
+
+
+EffectA=1.5
+
+p_71 <- ggplot(Country_Shannon5_10) +
+  aes(x = Shannon_Catch_Total,y = Shannon_Value_Total,color = Year)+
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1995,
+                          breaks = seq(1980, 2010,by=5),
+                        labels = seq(1980, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Catch_Ranking,labeller = labeli2)　+
+  labs(x = "Catch_λ",y = "Value_λ",size="Total_Catch(million ton)") +   
+ #scale_x_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+#  scale_y_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+ #左上から上位順にプロットされている
+print(p_71)
+
+
+#漁獲高上位10カ国
+Country_Shannon6_10 <- Country_Shannon2_10 %>% 
+ filter(Year >= 1980)
+
+
+
+EffectA=1.5
+
+p_72<- ggplot(Country_Shannon6_10) +
+  aes(x = Shannon_Catch_Total,y = Shannon_Value_Total,color = Year)+
+   theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_point(aes(size = TotalCatch_Tonnes),alpha=.3) +
+   scale_colour_gradient2(name="年",low = "red", mid = "yellow", high = "blue", midpoint=1995,
+                          breaks = seq(1980, 2010,by=5),
+                        labels = seq(1980, 2010,by=5))+
+  geom_abline(intercept = 0,slope = 1,linetype = "dotted") +
+  facet_wrap(~ Value_Ranking,labeller = labeli1)　+
+  labs(x = "Catch_λ",y = "Value_λ",size="Total_Catch(million ton)") +   
+ #scale_x_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+#  scale_y_continuous(limits = c(Simpson_Min,Simpson_Max)) +
+  theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))+
+  scale_radius(range=c(15/EffectA,45/EffectA))
+
+ #左上から上位順にプロットされている
+print(p_72)
+```
+
+
+
+
+#多様性指数の時系列表示
+##上位10カ国
+###HHI
+####漁獲量上位10カ国
+```{r}
+#漁獲量
+Country_HHI_stack_Catch_1 <- Country_HHI1_10 
+  
+p_73 <- ggplot(Country_HHI_stack_Catch_1) +
+  aes(x = Year,y = HHI_Catch_Total,fill = Country.or.Area) +
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_area() +
+  scale_x_continuous(breaks = seq(1950,2010,10)) +
+  scale_y_continuous(breaks = seq(0,25000,2000)) +
+  labs(x = "Year",y = "HHI_Total",fill = "Country") +
+   theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))
+
+print(p_73)
+
+
+#漁獲高
+Country_HHI_stack_Catch_2 <- Country_HHI1_10 
+  
+p_74 <- ggplot(Country_HHI_stack_Catch_2) +
+  aes(x = Year,y = HHI_Value_Total,fill = Country.or.Area) +
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_area() +
+  scale_x_continuous(breaks = seq(1950,2010,10)) +
+  scale_y_continuous(breaks = seq(0,25000,2000)) +
+  labs(x = "Year",y = "HHI_Total",fill = "Country") +
+   theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))
+
+print(p_74)
+
+```
+
+
+
+
+####漁獲高上位10カ国
+```{r}
+#漁獲量
+Country_HHI_stack_Value_1 <- Country_HHI2_10 
+  
+p_75 <- ggplot(Country_HHI_stack_Value_1) +
+  aes(x = Year,y = HHI_Catch_Total,fill = Country.or.Area) +
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_area() +
+  scale_x_continuous(breaks = seq(1950,2010,10)) +
+  scale_y_continuous(breaks = seq(0,16000,2000)) +
+  labs(x = "Year",y = "HHI_Total",fill = "Country") +
+   theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))
+
+print(p_75)
+
+
+#漁獲高
+Country_HHI_stack_Value_2 <- Country_HHI2_10 
+  
+p_76 <- ggplot(Country_HHI_stack_Value_2) +
+  aes(x = Year,y = HHI_Value_Total,fill = Country.or.Area) +
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_area() +
+  scale_x_continuous(breaks = seq(1950,2010,10)) +
+  scale_y_continuous(breaks = seq(0,16000,2000)) +
+  labs(x = "Year",y = "HHI_Total",fill = "Country") +
+   theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))
+
+print(p_76)
+
+```
+
+
+
+
+###Simpson
+####漁獲量上位10カ国
+```{r}
+#漁獲量
+Country_Simpson_stack_Catch_1 <- Country_Simpson1_10 
+  
+p_77 <- ggplot(Country_Simpson_stack_Catch_1) +
+  aes(x = Year,y = Simpson_Catch_Total,fill = Country.or.Area) +
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_area() +
+  scale_x_continuous(breaks = seq(1950,2010,10)) +
+  scale_y_continuous(breaks = seq(0,150,20)) +
+  labs(x = "Year",y = "λ_Total",fill = "Country") +
+   theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))
+
+print(p_77)
+
+
+#漁獲高
+Country_Simpson_stack_Catch_2 <- Country_Simpson1_10 
+  
+p_78 <- ggplot(Country_Simpson_stack_Catch_2) +
+  aes(x = Year,y = Simpson_Value_Total,fill = Country.or.Area) +
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_area() +
+  scale_x_continuous(breaks = seq(1950,2010,10)) +
+  scale_y_continuous(breaks = seq(0,150,20)) +
+  labs(x = "Year",y = "λ_Total",fill = "Country") +
+   theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))
+
+print(p_78)
+
+```
+
+
+
+
+####漁獲高上位10カ国
+```{r}
+#漁獲量
+Country_Simpson_stack_Value_1 <- Country_Simpson2_10 
+  
+p_79 <- ggplot(Country_Simpson_stack_Value_1) +
+  aes(x = Year,y = Simpson_Catch_Total,fill = Country.or.Area) +
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_area() +
+  scale_x_continuous(breaks = seq(1950,2010,10)) +
+  scale_y_continuous(breaks = seq(0,150,20)) +
+  labs(x = "Year",y = "λ_Total",fill = "Country") +
+   theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))
+
+print(p_79)
+
+
+#漁獲高
+Country_Simpson_stack_Value_2 <- Country_Simpson2_10 
+  
+p_80 <- ggplot(Country_Simpson_stack_Value_2) +
+  aes(x = Year,y = Simpson_Value_Total,fill = Country.or.Area) +
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_area() +
+  scale_x_continuous(breaks = seq(1950,2010,10)) +
+  scale_y_continuous(breaks = seq(0,150,20)) +
+  labs(x = "Year",y = "λ_Total",fill = "Country") +
+   theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))
+
+print(p_80)
+
+```
+
+
+
+###Shannon
+####漁獲量上位10カ国
+```{r}
+#漁獲量
+Country_Shannon_stack_Catch_1 <- Country_Shannon1_10 
+  
+p_81 <- ggplot(Country_Shannon_stack_Catch_1) +
+  aes(x = Year,y = Shannon_Catch_Total,fill = Country.or.Area) +
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_area() +
+  scale_x_continuous(breaks = seq(1950,2010,10)) +
+  scale_y_continuous(breaks = seq(0,250,20)) +
+  labs(x = "Year",y = "H'_Total",fill = "Country") +
+   theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))
+
+print(p_81)
+
+
+#漁獲高
+Country_Shannon_stack_Catch_2 <- Country_Shannon1_10 
+  
+p_82 <- ggplot(Country_Shannon_stack_Catch_2) +
+  aes(x = Year,y = Shannon_Value_Total,fill = Country.or.Area) +
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_area() +
+  scale_x_continuous(breaks = seq(1950,2010,10)) +
+  scale_y_continuous(breaks = seq(0,250,20)) +
+  labs(x = "Year",y = "H'_Total",fill = "Country") +
+   theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))
+
+print(p_82)
+
+```
+
+
+
+
+####漁獲高上位10カ国
+```{r}
+#漁獲量
+Country_Shannon_stack_Value_1 <- Country_Shannon2_10 
+  
+p_83 <- ggplot(Country_Shannon_stack_Catch_1) +
+  aes(x = Year,y = Shannon_Catch_Total,fill = Country.or.Area) +
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_area() +
+  scale_x_continuous(breaks = seq(1950,2010,10)) +
+  scale_y_continuous(breaks = seq(0,250,20)) +
+  labs(x = "Year",y = "H'_Total",fill = "Country") +
+   theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))
+
+print(p_83)
+
+
+#漁獲高
+Country_Shannon_stack_Value_2 <- Country_Shannon2_10 
+  
+p_84 <- ggplot(Country_Shannon_stack_Catch_2) +
+  aes(x = Year,y = Shannon_Value_Total,fill = Country.or.Area) +
+  theme(text = element_text(family = "HiraKakuProN-W3"),panel.background=element_rect())+
+  geom_area() +
+  scale_x_continuous(breaks = seq(1950,2010,10)) +
+  scale_y_continuous(breaks = seq(0,250,20)) +
+  labs(x = "Year",y = "H'_Total",fill = "Country") +
+   theme( axis.title = element_text(size=15, face="bold"),
+       axis.text= element_text(size=12, face="bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+       plot.title = element_text(size=15, face="bold"),
+       legend.title = element_text(size=12, face="bold"),
+       legend.text=element_text(face="bold"))
+
+print(p_84)
+
+```
+
+
+
+
